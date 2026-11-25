@@ -659,3 +659,6 @@ progress { width: min(100%, 20rem); accent-color: var(--action); height: .75rem;
 .ticket-summary dl > div { display: grid; gap: .25rem; }
 .ticket-summary dd { margin-inline-start: 0; }
 .ticket-summary h4 { margin-block: 1rem .35rem; }
+
+.knowledge-metadata { display: grid; grid-template-columns: max-content 1fr; gap: .4rem .9rem; }
+.knowledge-metadata dd { margin: 0; }

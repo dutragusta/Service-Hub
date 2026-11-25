@@ -1,4 +1,4 @@
-import { catalog } from '../demo'
+import { catalogFor } from './knowledge'
 import type { Profile, Topic } from '../types'
 
 const knowledgeKey = 'service-hub-demo-knowledge-v1'
@@ -15,7 +15,7 @@ function readLocal<T>(key: string, fallback: T): T {
 
 export function getTopics(profile: Profile) {
   const overrides = readLocal<Partial<Record<Profile, Record<string, Topic>>>>(knowledgeKey, {})
-  return catalog[profile].map((topic) => overrides[profile]?.[topic.id] ?? topic)
+  return catalogFor(profile).map((topic) => ({ ...topic, ...overrides[profile]?.[topic.id] }))
 }
 
 export function saveTopic(profile: Profile, topic: Topic) {
@@ -49,6 +49,6 @@ export function sessionMetrics() {
   }
 }
 
-export function knowledgeReference({ id, title }: Pick<Topic, 'id' | 'title'>) {
-  return { id, title }
+export function knowledgeReference({ id, title, code, revision }: Topic) {
+  return { id, title, code, revision }
 }

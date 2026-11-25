@@ -107,3 +107,9 @@ Em **Abrir chamado → Preencher com caso fictício**, escolha um incidente do p
 O worker gera o resumo em `POST /api/tickets/summary`. Sem configuração de IA, a síntese usa regras no servidor. Para habilitar a redação por modelo, configure `OPENAI_API_KEY` como segredo e `OPENAI_SUMMARY_MODEL` com um modelo da API Responses que suporte respostas estruturadas. Use apenas dados fictícios. A versão estática preserva o fluxo com regras locais.
 
 Veja [Segurança e roteiro de demonstração](SEGURANCA.md). Execute `node scripts/check-ticket-summary.mjs` para validar a API, a estrutura do resumo e o tratamento de falha do provedor simulado.
+
+## Apresentação offline
+
+Para executar a aplicação completa localmente, rode `npm ci`, `npm run build` e `npm run demo`. Abra `http://127.0.0.1:4173/`. O pacote compilado pode ser iniciado diretamente com `node scripts/serve-demo.mjs` ou pelo `iniciar-demo.cmd` no Windows.
+
+O ambiente local serve a base fictícia por API, gera o resumo no servidor e permite concluir o atendimento pela fila de analista simulada. O catálogo e as citações exibem referência, revisão e equipe fictícia responsável. Consulte [APRESENTACAO.md](APRESENTACAO.md) para demonstrar a jornada e seus limites.

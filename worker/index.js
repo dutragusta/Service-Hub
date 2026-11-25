@@ -1,3 +1,4 @@
+import knowledgeBase from '../src/data/base-atendimento.json'
 import { ticketSummaryApi } from './ticket-summary.js'
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -114,6 +115,12 @@ async function portalAccountApi(request, db, path, identity) {
 export default {
   async fetch(request, env) {
     const path = new URL(request.url).pathname
+    if (path === '/api/knowledge') {
+      const profile = new URL(request.url).searchParams.get('profile')
+      if (request.method !== 'GET') return json({ error: 'Método indisponível.' }, 405)
+      if (profile !== 'colaborador' && profile !== 'cliente') return json({ error: 'Perfil indisponível.' }, 400)
+      return json({ profile, articles: knowledgeBase[profile] })
+    }
     if (path.startsWith('/api/')) {
       try {
         return path === '/api/tickets/summary' ? await ticketSummaryApi(request, env) : await permissionApi(request, env.DB, path)

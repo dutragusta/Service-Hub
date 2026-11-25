@@ -1,3 +1,4 @@
+import { loadKnowledge } from './services/knowledge'
 import { getTopics } from './services/operations'
 import '@fontsource-variable/manrope/wght.css'
 import './styles.css'
@@ -36,6 +37,7 @@ function Entry() {
   const [hovered, setHovered] = useState<Profile | null>(null)
   const [focused, setFocused] = useState<Profile | null>(null)
   const preview = hovered ?? focused ?? 'default'
+  const analyst = useTeamIdentity(true, true)
   return <div className="entry">
     <header className="entry-header"><Brand /><div className="header-actions"><span className="demo-label">Demonstração</span><ProfileMenu /></div></header>
     <main className="entry-main page-enter" id="main">
@@ -71,7 +73,9 @@ function Entry() {
             <span className="icon-box"><Icon size={23} aria-hidden /></span><strong>Sou {profile}</strong><p>{profiles[profile].description}</p><span className="profile-action">{profile === 'colaborador' ? 'Verificar e-mail' : 'Entrar ou solicitar cadastro'}</span>
           </Link>
         })}</div>
-        <div className="actions entry-access-links"><Link to="/acesso/equipe">Acesso da equipe</Link></div>
+        <div className="actions entry-access-links">{analyst?.demo
+          ? <Link to={queuePath}>Abrir fila do analista · simulação local</Link>
+          : <Link to="/acesso/equipe">Acesso da equipe</Link>}</div>
       </section>
     </main>
     <footer className="entry-footer"><span>Service Hub</span><span>Protótipo com dados fictícios</span></footer>
@@ -85,10 +89,20 @@ function PortalShell({ conversations, update }: { conversations: ConversationRec
   const location = useLocation()
   const identity = useTeamIdentity(candidate === 'colaborador')
   const role = identity?.role
+  const [knowledgeReady, setKnowledgeReady] = useState<string>()
+  useEffect(() => {
+    if (candidate !== 'cliente' && candidate !== 'colaborador') return
+    const controller = new AbortController()
+    void loadKnowledge(candidate, controller.signal).then(() => {
+      if (!controller.signal.aborted) setKnowledgeReady(candidate)
+    })
+    return () => controller.abort()
+  }, [candidate])
   const updateProfile = useCallback((conversation: Conversation) => {
     if (candidate === 'colaborador' || candidate === 'cliente') update(candidate, conversation)
   }, [candidate, update])
   if (candidate !== 'colaborador' && candidate !== 'cliente') return <main id="main" className="workspace"><Empty title="Portal indisponível"><Link to="/">Escolher perfil</Link></Empty></main>
+  if (knowledgeReady !== candidate) return <main id="main" className="workspace"><p role="status">Consultando a base de conhecimento…</p></main>
   const profile = candidate
   const base = '/' + profile
   const route = remainder.split('/')

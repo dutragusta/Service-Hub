@@ -1,3 +1,4 @@
+import { knowledgeMode } from '../services/knowledge'
 import { getTopics, knowledgeReference, recordSession } from '../services/operations'
 import { BookOpen, Headphones, Mail, Plus, Search } from 'lucide-react'
 import { useState } from 'react'
@@ -26,7 +27,7 @@ export function Portal({ profile }: { profile: Profile }) {
     <div className="portal-columns">
       <div>
         <section aria-labelledby="topics-title"><div className="section-heading"><h2 id="topics-title">{search === null ? 'Assuntos frequentes' : 'Resultados da busca'}</h2>{search !== null && <button className="text-button" onClick={() => { setSearch(null); setQuery('') }}>Limpar busca</button>}</div>
-        {search !== null && <p className="search-summary" role="status">{topics.length} {topics.length === 1 ? 'resultado' : 'resultados'} para “{search}”</p>}
+        {search !== null && <p className="search-summary" role="status">{knowledgeMode(profile) === 'servidor' ? 'Base fictícia consultada via API' : knowledgeMode(profile) === 'contingencia' ? 'Cópia de contingência' : 'Base fictícia local'} · {topics.length} {topics.length === 1 ? 'resultado' : 'resultados'} para “{search}”</p>}
         {topics.length ? <TopicCards topics={topics} url={(id) => base + '/assistente?assunto=' + id} /> : <Empty title="Nenhuma orientação encontrada"><p>Tente outro termo ou descreva o problema ao assistente.</p><Link className="button secondary" to={base + '/assistente'}>Abrir assistente</Link></Empty>}
         </section>
         <section className="recent" aria-labelledby="recent-title"><div className="section-heading"><h2 id="recent-title">Chamados recentes</h2><Link className="text-button" to={base + '/chamados'}>Ver todos</Link></div>
@@ -57,7 +58,7 @@ export function Knowledge({ profile, article }: { profile: Profile, article?: st
   const topics = searchTopics(profile, query).filter((topic) => !category || topic.id === category)
   return <><Heading title="Base de conhecimento" description="Consulte orientações disponíveis para o seu perfil." />
     <div className="filter-bar"><label>Buscar artigos<input type="search" value={query} placeholder="Nome ou assunto" onChange={(event) => setParams({ q: event.target.value, categoria: category }, { replace: true })} /></label><label>Categoria<select value={category} onChange={(event) => setParams({ q: query, categoria: event.target.value }, { replace: true })}><option value="">Todas as categorias</option>{getTopics(profile).map((topic) => <option key={topic.id} value={topic.id}>{topic.title}</option>)}</select></label></div>
-    <p className="search-summary" role="status">{topics.length} {topics.length === 1 ? 'artigo' : 'artigos'}</p>
+    <p className="search-summary" role="status">{knowledgeMode(profile) === 'servidor' ? 'Base fictícia consultada via API' : knowledgeMode(profile) === 'contingencia' ? 'Cópia de contingência' : 'Base fictícia local'} · {topics.length} {topics.length === 1 ? 'artigo' : 'artigos'}</p>
     {topics.length ? <TopicCards topics={topics} url={(id) => base + '/conhecimento/' + id} /> : <Empty title="Nenhum artigo encontrado"><button className="button secondary" onClick={() => setParams({})}>Limpar filtros</button></Empty>}
   </>
 }
@@ -82,8 +83,13 @@ function KnowledgeArticle({ profile, topic }: { profile: Profile, topic: Topic }
 
   return <article className="card narrow">
     <TopicIcon id={topic.id} /><h2>Como verificar o problema</h2><p>{topic.question}</p>
-    <p className="search-summary">Base de demonstração</p>
+    <dl className="knowledge-metadata">
+      {topic.code && <><dt>Referência</dt><dd>{topic.code} · Revisão {topic.revision}</dd></>}
+      {topic.owner && <><dt>Equipe responsável</dt><dd>{topic.owner}</dd></>}
+      {topic.reviewedOn && <><dt>Revisado em</dt><dd><time dateTime={topic.reviewedOn}>{topic.reviewedOn.split('-').reverse().join('/')}</time></dd></>}
+    </dl>
     <ol className="steps">{topic.steps.map((step) => <li key={step}>{step}</li>)}</ol>
+    {topic.escalation && <p className="alert">{topic.escalation}</p>}
     <Link className="button secondary" to={base + '/diagnostico/' + topic.id} state={{ context }}>Iniciar diagnóstico</Link>
     <section className="article-feedback" aria-labelledby="article-feedback-title">
       <h2 id="article-feedback-title">Isso resolveu o problema?</h2>

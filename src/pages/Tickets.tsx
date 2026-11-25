@@ -45,10 +45,11 @@ export function NewTicket({ profile }: { profile: Profile }) {
   const [outcome, setOutcome] = useState(context?.outcome ?? '')
   const topics = getTopics(profile)
   const selected = topics.find((topic) => topic.id === params.get('assunto'))
-  const [category, setCategory] = useState(selected?.title ?? '')
-  const [title, setTitle] = useState(selected ? 'Dificuldade com ' + selected.title : '')
-  const [center, setCenter] = useState('')
-  const [priority, setPriority] = useState<Priority>('Normal')
+  const [category, setCategory] = useState(selected?.title ?? (context?.exampleId ? 'Outro assunto' : ''))
+  const example = demoIncidents[profile].find((item) => item.id === context?.exampleId && (item.topic === selected?.id || (!selected && item.topic === 'outro')))
+  const [title, setTitle] = useState(example?.title ?? (selected ? 'Dificuldade com ' + selected.title : ''))
+  const [center, setCenter] = useState(example?.center ?? '')
+  const [priority, setPriority] = useState<Priority>(example?.priority ?? 'Normal')
   const [details, setDetails] = useState<IncidentDetails>({})
   const [showDetails, setShowDetails] = useState(false)
   const [caseLoaded, setCaseLoaded] = useState('')
@@ -58,6 +59,12 @@ export function NewTicket({ profile }: { profile: Profile }) {
   const navigate = useNavigate()
   const base = '/' + profile
   const centers = profile === 'colaborador' ? readCostCenters() : []
+
+  function loadExampleDetails() {
+    if (!example) return
+    setDetails(example)
+    setShowDetails(true)
+  }
 
   function loadExample(id: string) {
     const example = demoIncidents[profile].find((item) => item.id === id)
@@ -101,10 +108,10 @@ export function NewTicket({ profile }: { profile: Profile }) {
     const input = cleanSummaryInput({
       ...details, profile, category, title, description, priority,
       channel: 'Portal ' + (profile === 'cliente' ? 'do cliente' : 'do colaborador'),
-      queue: routing?.queue ?? (profile === 'cliente' ? 'Suporte ao cliente' : undefined),
+      queue: routing?.queue ?? (profile === 'cliente' ? 'Triagem geral' : undefined),
       center: routing?.centerName,
       report: savedContext?.report, assessment: savedContext?.assessment,
-      article: savedContext?.article?.title, guidance: savedContext?.guidance, outcome: savedContext?.outcome,
+      article: savedContext?.article ? [savedContext.article.code, savedContext.article.title, savedContext.article.revision && 'Revisão ' + savedContext.article.revision].filter(Boolean).join(' · ') : undefined, guidance: savedContext?.guidance, outcome: savedContext?.outcome,
     })
     if (!input) {
       setErrors({ form: 'Revise o texto do chamado. Use dados fictícios e remova e-mails, senhas, tokens ou códigos de autenticação.' })
@@ -156,6 +163,7 @@ export function NewTicket({ profile }: { profile: Profile }) {
             <label><input type="radio" name="priority" value="Alta" checked={priority === 'Alta'} onChange={() => setPriority('Alta')} /><span>Alto<small>Uma atividade essencial está parada.</small></span></label>
           </div>
         </fieldset>
+        {example && <button type="button" className="button secondary" onClick={loadExampleDetails}>Preencher evidências fictícias</button>}
         <button type="button" className="button secondary" aria-expanded={showDetails} aria-controls="incident-details" onClick={() => setShowDetails(!showDetails)}>{showDetails ? 'Recolher condições do incidente' : 'Adicionar condições do incidente'}</button>
         <div id="incident-details" className="incident-fields" hidden={!showDetails}>
           {incidentFields.map(([field, label]) => <label key={field}>{label}<textarea rows={field === 'tests' ? 3 : 2} maxLength={600} value={details[field] ?? ''} onChange={(event) => setDetails({ ...details, [field]: event.target.value })} /></label>)}

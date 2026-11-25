@@ -13,13 +13,19 @@
       ],
       "question": "Você consegue acessar um site público no mesmo dispositivo?",
       "steps": [
-        "Feche e reabra o aplicativo de VPN aprovado pela empresa.",
-        "Tente conectar novamente. Se houver erro, anote a mensagem exibida sem incluir dados da conta."
+        "Confirme se um site público abre no mesmo dispositivo. Se puder, repita em outra rede autorizada.",
+        "Feche e reabra o cliente de VPN aprovado. Compare o resultado nas duas redes.",
+        "Se a falha continuar, informe o horário aproximado, a mensagem exibida e a atividade afetada."
       ],
       "alternate": [
         "Reconecte o dispositivo à rede e confirme que consegue abrir um site público.",
         "Quando a conexão voltar, tente acessar a VPN pelo aplicativo aprovado pela empresa."
-      ]
+      ],
+      "code": "KB-COL-101",
+      "revision": "2.1",
+      "owner": "Conectividade",
+      "reviewedOn": "2026-11-20",
+      "escalation": "Se a VPN expirar em duas redes com internet funcionando, encaminhe para Conectividade; informe horário e mensagem."
     },
     {
       "id": "login",
@@ -44,7 +50,12 @@
       "alternate": [
         "Abra a página de acesso pelo endereço fornecido pela TI.",
         "Se a opção de recuperação continuar indisponível, registre a mensagem de erro para o suporte."
-      ]
+      ],
+      "code": "KB-COL-102",
+      "revision": "1.3",
+      "owner": "Gestão de acessos",
+      "reviewedOn": "2026-11-20",
+      "escalation": "Se a recuperação for concluída e o bloqueio persistir, encaminhe para a fila de Acessos."
     },
     {
       "id": "teams",
@@ -63,13 +74,19 @@
       ],
       "question": "O Teams funciona no navegador autorizado pela empresa?",
       "steps": [
-        "Feche o Teams por completo e reabra o aplicativo.",
-        "Se o problema estiver em uma chamada, confira o microfone e o alto-falante nas configurações do Teams. Faça uma chamada de teste, se disponível."
+        "Faça uma chamada de teste pelo navegador para verificar se a falha ocorre somente no aplicativo.",
+        "No aplicativo, abra as configurações de dispositivos, selecione o microfone usado no teste e confira o nível de entrada.",
+        "Reabra o aplicativo e repita a chamada. Se o navegador funcionar, ele pode servir temporariamente enquanto o suporte investiga."
       ],
       "alternate": [
         "Confirme que o dispositivo está conectado à internet e tente abrir o Teams novamente.",
         "Se a falha ocorrer nas duas versões, anote se ela afeta a entrada no Teams, as reuniões ou as mensagens."
-      ]
+      ],
+      "code": "KB-COL-103",
+      "revision": "1.2",
+      "owner": "Ferramentas de trabalho",
+      "reviewedOn": "2026-11-20",
+      "escalation": "Se o navegador funcionar e o aplicativo falhar, registre a versão do aplicativo, o dispositivo e o resultado do teste."
     }
   ],
   "cliente": [
@@ -91,7 +108,12 @@
       "alternate": [
         "Confirme o endereço do canal com o responsável pelo contrato na sua empresa.",
         "Se a página continuar indisponível, anote a hora aproximada e a mensagem exibida."
-      ]
+      ],
+      "code": "KB-CLI-201",
+      "revision": "1.4",
+      "owner": "Atendimento ao cliente",
+      "reviewedOn": "2026-11-20",
+      "escalation": "Se o portal confirmar a recuperação e continuar recusando o acesso, registre a mensagem e acione o suporte ao cliente."
     },
     {
       "id": "documentos",
@@ -111,7 +133,12 @@
       "alternate": [
         "Confirme com o responsável pelo contrato se sua conta tem acesso à documentação.",
         "Se precisar solicitar o material, informe somente o nome público do serviço e do documento."
-      ]
+      ],
+      "code": "KB-CLI-202",
+      "revision": "1.1",
+      "owner": "Documentação de serviços",
+      "reviewedOn": "2026-11-20",
+      "escalation": "Solicitações de declarações assinadas, auditorias e documentos fora do catálogo exigem atendimento humano."
     },
     {
       "id": "servicos",
@@ -136,7 +163,12 @@
       "alternate": [
         "Verifique se a falha continua depois de recarregar a interface do serviço.",
         "Se persistir, registre a ação que apresentou erro e o horário aproximado."
-      ]
+      ],
+      "code": "KB-CLI-203",
+      "revision": "1.1",
+      "owner": "Operações de serviços",
+      "reviewedOn": "2026-11-20",
+      "escalation": "Uma falha que interrompe a operação de vários usuários deve ser encaminhada com horário, atividade e abrangência."
     },
     {
       "id": "conectividade",
@@ -158,7 +190,12 @@
       "alternate": [
         "Verifique se outros serviços autorizados abrem no mesmo dispositivo.",
         "Se a falha persistir, anote a mensagem exibida e o horário aproximado para registrar um chamado."
-      ]
+      ],
+      "code": "KB-CLI-204",
+      "revision": "1.2",
+      "owner": "Operações de conectividade",
+      "reviewedOn": "2026-11-20",
+      "escalation": "Se houver falha em mais de um acesso autorizado, informe a abrangência e deixe a investigação com a equipe."
     }
   ]
 }

@@ -5,6 +5,7 @@ type DemoIncident = Required<IncidentDetails> & {
   topic: string
   title: string
   description: string
+  opening: string
   priority: Priority
   center?: string
 }
@@ -13,6 +14,7 @@ export const demoIncidents: Record<Profile, DemoIncident[]> = {
   colaborador: [
     {
       id: 'vpn', topic: 'vpn', title: 'VPN expira antes de concluir a conexão',
+      opening: 'Desde as 08h40 a VPN expira ao conectar no notebook. Preciso acessar a intranet para conferir um relatório até as 10h.',
       description: 'A VPN passou a expirar na conexão. O acesso à intranet fica indisponível durante o trabalho remoto.',
       startedAt: 'Hoje às 08h40 (horário de Brasília). Falha em todas as tentativas desde então.',
       environment: 'Notebook de demonstração com Windows 11. Falha observada no Wi-Fi residencial e em uma segunda rede.',
@@ -24,6 +26,7 @@ export const demoIncidents: Record<Profile, DemoIncident[]> = {
     },
     {
       id: 'login', topic: 'login', title: 'Conta permanece bloqueada após recuperação',
+      opening: 'Minha conta está bloqueada. Concluí a recuperação às 09h32 e a mensagem de bloqueio apareceu de novo.',
       description: 'A conta continua bloqueada ao tentar acessar o ambiente de trabalho, mesmo após a confirmação da recuperação.',
       startedAt: 'Hoje às 09h15. O bloqueio apareceu novamente na tentativa das 09h32.',
       environment: 'Notebook de demonstração com Windows 11. Página de entrada aberta no navegador.',
@@ -35,6 +38,7 @@ export const demoIncidents: Record<Profile, DemoIncident[]> = {
     },
     {
       id: 'teams', topic: 'teams', title: 'Teams não capta áudio no aplicativo',
+      opening: 'O microfone do Teams fica mudo no aplicativo. O mesmo headset funciona no navegador.',
       description: 'Na reunião de teste, o aplicativo desktop do Teams deixa o microfone mudo. O mesmo equipamento capta áudio no navegador.',
       startedAt: 'Hoje às 14h05, em duas chamadas de teste consecutivas.',
       environment: 'Teams desktop em notebook de demonstração no Windows 11, com headset USB.',
@@ -48,6 +52,7 @@ export const demoIncidents: Record<Profile, DemoIncident[]> = {
   cliente: [
     {
       id: 'portal', topic: 'portal', title: 'Portal recusa acesso após recuperação',
+      opening: 'Desde as 10h20 o portal recusa o acesso depois que concluo a recuperação da conta.',
       description: 'A página de entrada abre, mas a conta da empresa de demonstração recebe acesso negado após a recuperação.',
       startedAt: 'Hoje às 10h20. O mesmo problema ocorreu às 10h45 após a recuperação.',
       environment: 'Navegador autorizado de demonstração, em janela normal e privativa.',
@@ -59,6 +64,7 @@ export const demoIncidents: Record<Profile, DemoIncident[]> = {
     },
     {
       id: 'solicitacao-especial', topic: 'outro', title: 'Pedido de declaração para auditoria',
+      opening: 'Preciso de uma declaração assinada do histórico de atendimento para uma auditoria.',
       description: 'A empresa de demonstração pediu uma declaração assinada sobre o histórico de atendimento de um período fictício.',
       startedAt: 'Pedido recebido hoje às 11h30.',
       environment: 'Solicitação administrativa no portal do cliente.',

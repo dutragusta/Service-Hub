@@ -16,11 +16,16 @@ export function searchTopics(profile: Profile, query: string) {
 
 export function identifyTopic(profile: Profile, message: string): Topic | undefined {
   const words = ' ' + normalize(message).replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ') + ' '
+  const normalizedWords = words.trim().split(' ').filter(Boolean)
+  const onlyGeneric = new Set(['acesso', 'conta', 'entrar', 'falha', 'atendimento', 'suporte', 'servico', 'indisponivel'])
   const matches = getTopics(profile).map((topic) => ({
     topic,
-    score: topic.keywords.reduce((sum, word) => sum + (words.includes(' ' + normalize(word) + ' ') ? word.length : 0), 0),
+    score: topic.keywords.reduce((sum, word) => sum + (words.includes(' ' + normalize(word) + ' ') ? (onlyGeneric.has(normalize(word)) ? 1 : word.length) : 0), 0),
   }))
-  return matches.filter((match) => match.score > 0).sort((a, b) => b.score - a.score)[0]?.topic
+  const [best, second] = matches.sort((a, b) => b.score - a.score)
+  if (!best || !best.score || (second && best.score === second.score)) return
+  if (best.score < 3 && normalizedWords.length > 1) return
+  return best.topic
 }
 
 export function looksSensitive(message: string) {

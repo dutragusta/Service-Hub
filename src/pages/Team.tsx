@@ -70,7 +70,7 @@ function SupportQueue({ identity }: { identity: TeamIdentity }) {
   const [queue, setQueue] = useState('')
   const [previewEmail, setPreviewEmail] = useState('')
   const assigned = audiences.flatMap((profile) => readTickets(profile).map((ticket) => ({ profile, ticket })))
-    .filter(({ ticket }) => identity.role && canHandleTicket(ticket, identity.role, identity.email))
+    .filter(({ ticket }) => identity.role && (identity.demo || canHandleTicket(ticket, identity.role, identity.email)))
   const queues = [...new Set(assigned.map(({ ticket }) => ticket.routing?.queue ?? triageQueue))].sort()
   const analysts = [...new Set(assigned.flatMap(({ ticket }) => ticket.routing?.responsible ?? []))].sort()
 
@@ -80,6 +80,7 @@ function SupportQueue({ identity }: { identity: TeamIdentity }) {
     .sort((a, b) => Number(b.ticket.priority === 'Alta') - Number(a.ticket.priority === 'Alta') || Date.parse(b.ticket.date) - Date.parse(a.ticket.date))
   return <>
     <Heading title="Fila de suporte" description="Assuma um chamado, consulte o diagnóstico e registre a solução." />
+    {identity.demo && <p className="alert" role="status">Modo local de apresentação. A conta fictícia pode atender os chamados deste navegador.</p>}
     <div className="filter-bar">
       <label>Status<select value={status} onChange={(event) => setStatus(event.target.value)}><option value="">Todos os status</option>{statuses.map((item) => <option key={item}>{item}</option>)}</select></label>
       <label>Impacto<select value={impact} onChange={(event) => setImpact(event.target.value)}><option value="">Todos os impactos</option><option value="Normal">Normal</option><option value="Alta">Alto</option></select></label>
@@ -110,7 +111,7 @@ function SupportTicketForm({ profile, ticketId, identity }: { profile: Profile, 
   const [message, setMessage] = useState('')
   const [feedback, setFeedback] = useState('')
   const [error, setError] = useState('')
-  if (!ticket || !identity.role || !canHandleTicket(ticket, identity.role, identity.email)) return <Empty title="Chamado indisponível"><Link to={queuePath}>Voltar à fila</Link></Empty>
+  if (!ticket || !identity.role || (!identity.demo && !canHandleTicket(ticket, identity.role, identity.email))) return <Empty title="Chamado indisponível"><Link to={queuePath}>Voltar à fila</Link></Empty>
 
   async function apply(kind: 'claim' | 'reply' | 'resolve') {
     setError('')
@@ -119,7 +120,7 @@ function SupportTicketForm({ profile, ticketId, identity }: { profile: Profile, 
     try {
       const current = await requireTeamRole()
       const savedTicket = readTickets(profile).find(({ id }) => id === ticketId)
-      if (!savedTicket || !current.role || !canHandleTicket(savedTicket, current.role, current.email)) {
+      if (!savedTicket || !current.role || (!current.demo && !canHandleTicket(savedTicket, current.role, current.email))) {
         throw new Error('Sua conta não tem acesso a este chamado.')
       }
       setTicket(updateTicket(profile, ticketId, kind === 'claim' ? { kind } : { kind, text: message }))

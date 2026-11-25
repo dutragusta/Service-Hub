@@ -4,7 +4,7 @@ export const settingsPath = '/colaborador/configuracoes'
 export const queuePath = '/colaborador/fila-suporte'
 
 export type TeamRole = 'admin' | 'support'
-export type TeamIdentity = { role: TeamRole | null, email?: string }
+export type TeamIdentity = { role: TeamRole | null, email?: string, demo?: boolean }
 export type Permission = { email: string, role: TeamRole, expires_at: number | null }
 
 export async function accessRequest<T>(path: string, body?: object): Promise<T> {
@@ -20,7 +20,7 @@ export function useTeamRole(enabled: boolean) {
   return useTeamIdentity(enabled)?.role
 }
 
-export function useTeamIdentity(enabled: boolean) {
+export function useTeamIdentity(enabled: boolean, singleCheck = false) {
   const [verified, setVerified] = useState<TeamIdentity>()
   useEffect(() => {
     if (!enabled) {
@@ -35,10 +35,11 @@ export function useTeamIdentity(enabled: boolean) {
       if (active && sequence === requestId) setVerified(identity)
     }
     void refresh()
+    if (singleCheck) return () => { active = false }
     window.addEventListener('focus', refresh)
     const timer = window.setInterval(refresh, 15000)
     return () => { active = false; window.removeEventListener('focus', refresh); window.clearInterval(timer) }
-  }, [enabled])
+  }, [enabled, singleCheck])
   return enabled ? verified : undefined
 }
 

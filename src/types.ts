@@ -4,6 +4,11 @@ export type Status = 'Aberto' | 'Em atendimento' | 'Resolvido'
 export type Topic = {
   id: string
   title: string
+  code?: string
+  revision?: string
+  owner?: string
+  reviewedOn?: string
+  escalation?: string
   description: string
   keywords: string[]
   question: string
@@ -31,7 +36,7 @@ export type Ticket = {
   events?: TicketEvent[]
 }
 
-export type KnowledgeReference = Pick<Topic, 'id' | 'title'>
+export type KnowledgeReference = Pick<Topic, 'id' | 'title' | 'code' | 'revision'>
 
 export type TicketContext = {
   profile: Profile
@@ -42,6 +47,7 @@ export type TicketContext = {
   guidance?: string[]
   outcome?: string
   sessionId?: string
+  exampleId?: string
   sessionSource?: 'Assistente' | 'Artigo'
 }
 

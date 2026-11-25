@@ -36,7 +36,7 @@ export function Empty({ title, children }: { title: string, children?: ReactNode
 export function KnowledgeSource({ article, profile, context }: { article: KnowledgeReference, profile: Profile, context?: TicketContext }) {
   return <div className="knowledge-source">
     <BookOpen size={16} aria-hidden />
-    <div><small>Fonte · Base de demonstração</small>
+    <div><small>{article.code ? `Fonte · ${article.code} · Rev. ${article.revision}` : 'Fonte · Base de demonstração'}</small>
       <Link to={'/' + profile + '/conhecimento/' + encodeURIComponent(article.id)} state={context ? { context } : undefined}>{article.title}</Link>
     </div>
   </div>

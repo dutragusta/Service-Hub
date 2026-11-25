@@ -23,3 +23,7 @@ O projeto foi preparado para demonstrar autoatendimento com chamados, pessoas e 
 O GitHub Pages usa HTML, JavaScript e armazenamento local, com os resumos gerados por regras no próprio navegador. O acesso aos portais de demonstração é público, os chamados ficam no navegador e o armazenamento não oferece autorização por usuário nem separação segura de dados de organizações. Use exclusivamente dados fictícios. A detecção de credenciais cobre padrões comuns e pode deixar passar outros formatos.
 
 Antes de um piloto com dados reais, implemente autorização por chamado e por organização no servidor, persistência com controle de acesso, trilha de auditoria, limites de uso por identidade para o modelo e políticas de retenção. Valide o fluxo, a aprovação do provedor e o tratamento de dados com a equipe responsável.
+
+## Execução de apresentação no computador
+
+O servidor de demonstração escuta apenas em `127.0.0.1`, valida o host e a origem, descarta cabeçalhos de identidade fornecidos pelo navegador e fornece uma identidade fictícia limitada à fila local. Rotas de gestão autenticada ficam indisponíveis nesse modo. A API de conhecimento retorna apenas as orientações fictícias do perfil solicitado e a execução local do resumo não configura provedor externo. Use apenas dados de demonstração.
