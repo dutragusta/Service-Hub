@@ -20,6 +20,12 @@ npm run preview
 
 A pasta `dist/` contém o resultado estático. A navegação por hash permite abrir links diretos sem configuração de redirecionamento no servidor.
 
+## GitHub Pages
+
+A [demonstração pública](https://dutragusta.github.io/Service-Hub/) é publicada a partir da raiz de `main`. Use `npm ci` e `npm run build:pages` para atualizar o `index.html` e os arquivos compilados em `pages/assets/`. Envie essas alterações com as mudanças do código-fonte.
+
+Para navegar pelos portais no Pages, escolha um perfil e selecione **Explorar demonstração**. Verificação de e-mail, cadastro, administração e fila autorizada dependem do ambiente com autenticação e worker.
+
 ## Roteiro para o Hackathon
 
 1. Escolha **Sou colaborador** e abra **Acesso à VPN**.
