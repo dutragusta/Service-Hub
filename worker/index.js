@@ -1,3 +1,5 @@
+import { ticketSummaryApi } from './ticket-summary.js'
+
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const inviteDuration = 48 * 60 * 60 * 1000
 
@@ -114,7 +116,7 @@ export default {
     const path = new URL(request.url).pathname
     if (path.startsWith('/api/')) {
       try {
-        return await permissionApi(request, env.DB, path)
+        return path === '/api/tickets/summary' ? await ticketSummaryApi(request, env) : await permissionApi(request, env.DB, path)
       } catch {
         const operation = ['/api/access', '/api/access/accept', '/api/team/access', '/api/portal/account', '/api/team/accounts'].includes(path) ? path : 'outra-rota'
         console.error('Erro na API do portal', request.method, operation)

@@ -23,6 +23,7 @@ export type Ticket = {
   status: Status
   date: string
   context?: TicketContext
+  summary?: TicketSummary
   routing?: TicketRouting
   assignee?: string
   dueAt?: string
@@ -49,3 +50,42 @@ export type TicketEvent = { at: string } & (
   { type: 'reply', author: string, text: string } |
   { type: 'attachment', name: string, text: string }
 )
+
+export type IncidentDetails = {
+  startedAt?: string
+  environment?: string
+  scope?: string
+  impact?: string
+  errorMessage?: string
+  tests?: string
+}
+
+export type SummaryInput = IncidentDetails & {
+  profile: Profile
+  title: string
+  description: string
+  category: string
+  priority: Priority
+  channel?: string
+  queue?: string
+  center?: string
+  report?: string
+  assessment?: string
+  article?: string
+  guidance?: string[]
+  outcome?: string
+}
+
+export type TicketSummary = {
+  origin: 'local' | 'regras' | 'modelo'
+  synopsis: string
+  conditions: [string, string][]
+  executedTests: string
+  assessment?: string
+  guidance: string[]
+  article?: string
+  handoff: string
+  destination: string
+  gaps: string[]
+  nextAction: string
+}

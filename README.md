@@ -99,3 +99,11 @@ A edição usa tabelas próprias de contas e convites. Cadastros anteriores fica
 Para uma instalação com autenticação, use um ambiente que forneça o binding D1 `DB`, aplique as migrações em `drizzle/` e configure uma camada de autenticação confiável. O proxy de autenticação deve remover cabeçalhos de identidade enviados pelo cliente e injetar os cabeçalhos esperados pelo worker após validar a sessão. Mantenha o worker acessível somente por essa camada.
 
 O identificador da hospedagem e o hash do e-mail do administrador inicial são configurações locais. Se necessário, configure o hash em `worker/owner.sha256`. O build funciona sem esse arquivo e o ambiente fica sem administrador inicial. Os fluxos de autenticação precisam da infraestrutura que fornece a identidade. A prévia estática serve para navegar pela demonstração com dados fictícios.
+
+## Casos fictícios e resumo para o suporte
+
+Em **Abrir chamado → Preencher com caso fictício**, escolha um incidente do perfil e revise as condições antes do registro. Há exemplos de VPN, login, Teams, acesso ao portal e uma solicitação que exige atendimento humano. A demonstração por e-mail também mostra o resumo no encaminhamento ao analista.
+
+O worker gera o resumo em `POST /api/tickets/summary`. Sem configuração de IA, a síntese usa regras no servidor. Para habilitar a redação por modelo, configure `OPENAI_API_KEY` como segredo e `OPENAI_SUMMARY_MODEL` com um modelo da API Responses que suporte respostas estruturadas. Use apenas dados fictícios. A versão estática preserva o fluxo com regras locais.
+
+Veja [Segurança e roteiro de demonstração](SEGURANCA.md). Execute `node scripts/check-ticket-summary.mjs` para validar a API, a estrutura do resumo e o tratamento de falha do provedor simulado.

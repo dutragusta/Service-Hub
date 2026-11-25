@@ -1,11 +1,15 @@
 import { getTopics, recordSession } from '../services/operations'
 import { CheckCircle2, ClipboardList, Info, MessageSquare, Paperclip, Plus, TicketPlus } from 'lucide-react'
-import { useState, type FormEvent } from 'react'
+import { useRef, useState, type FormEvent } from 'react'
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { Empty, Heading, KnowledgeSource, StatusLabel } from '../components/ui'
 import { formatDate, formatDateTime, looksSensitive, readTickets, saveTicket } from '../services/support'
 import { readCostCenters, routeInternalTicket } from '../services/routing'
-import type { Profile, Ticket, TicketContext, TicketEvent } from '../types'
+import { SummaryDetails } from '../components/TicketSummary'
+import { demoIncidents } from '../data/demo-incidents'
+import { summarizeTicket } from '../services/summarization'
+import { cleanSummaryInput } from '../services/ticket-summary.mjs'
+import type { IncidentDetails, Priority, Profile, Ticket, TicketContext, TicketEvent } from '../types'
 
 export function TicketList({ tickets, base }: { tickets: Ticket[], base: string }) {
   if (!tickets.length) return <Empty title="Nenhum chamado encontrado"><p>Novas solicitações aparecem aqui.</p></Empty>
@@ -23,6 +27,15 @@ export function Tickets({ profile }: { profile: Profile }) {
   <TicketList tickets={tickets} base={base} /></>
 }
 
+const incidentFields = [
+  ['startedAt', 'Quando começou e com que frequência?'],
+  ['environment', 'Em qual dispositivo, aplicativo ou rede?'],
+  ['scope', 'Quem mais foi afetado?'],
+  ['impact', 'Qual atividade foi afetada?'],
+  ['errorMessage', 'Qual mensagem apareceu?'],
+  ['tests', 'Quais testes você executou e o que aconteceu?'],
+] as const
+
 export function NewTicket({ profile }: { profile: Profile }) {
   const [params] = useSearchParams()
   const routeContext = useLocation().state?.context as TicketContext | undefined
@@ -32,13 +45,37 @@ export function NewTicket({ profile }: { profile: Profile }) {
   const [outcome, setOutcome] = useState(context?.outcome ?? '')
   const topics = getTopics(profile)
   const selected = topics.find((topic) => topic.id === params.get('assunto'))
+  const [category, setCategory] = useState(selected?.title ?? '')
+  const [title, setTitle] = useState(selected ? 'Dificuldade com ' + selected.title : '')
+  const [center, setCenter] = useState('')
+  const [priority, setPriority] = useState<Priority>('Normal')
+  const [details, setDetails] = useState<IncidentDetails>({})
+  const [showDetails, setShowDetails] = useState(false)
+  const [caseLoaded, setCaseLoaded] = useState('')
+  const [saving, setSaving] = useState(false)
+  const pending = useRef(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const navigate = useNavigate()
   const base = '/' + profile
   const centers = profile === 'colaborador' ? readCostCenters() : []
 
-  function submit(event: FormEvent<HTMLFormElement>) {
+  function loadExample(id: string) {
+    const example = demoIncidents[profile].find((item) => item.id === id)
+    if (!example) return
+    setCategory(topics.find((topic) => topic.id === example.topic)?.title ?? 'Outro assunto')
+    setCenter(centers.find(({ code }) => code === example.center)?.code ?? '')
+    setTitle(example.title)
+    setDescription(example.description)
+    setPriority(example.priority)
+    setDetails(example)
+    setCaseLoaded(id)
+    setShowDetails(true)
+    setErrors({})
+  }
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    if (pending.current) return
     const form = event.currentTarget
     const fields = new FormData(form)
     const category = String(fields.get('category') ?? '')
@@ -46,7 +83,6 @@ export function NewTicket({ profile }: { profile: Profile }) {
     const description = String(fields.get('description') ?? '').trim()
     const selectedTopic = form.querySelector<HTMLSelectElement>('select[name=category]')?.selectedOptions[0]?.dataset.topic ?? 'other'
     const routing = profile === 'colaborador' ? routeInternalTicket(String(fields.get('costCenter') ?? ''), selectedTopic) : undefined
-    const priority = fields.get('priority') === 'Alta' ? 'Alta' : 'Normal'
     const validation: Record<string, string> = {}
     if (!category) validation.category = 'Selecione uma categoria.'
     if (title.length < 5) validation.title = 'Insira um título com pelo menos 5 caracteres.'
@@ -61,12 +97,31 @@ export function NewTicket({ profile }: { profile: Profile }) {
       if (input instanceof HTMLElement) input.focus()
       return
     }
+    const savedContext = includeContext && context ? { ...context, outcome: outcome.trim() || undefined } : undefined
+    const input = cleanSummaryInput({
+      ...details, profile, category, title, description, priority,
+      channel: 'Portal ' + (profile === 'cliente' ? 'do cliente' : 'do colaborador'),
+      queue: routing?.queue ?? (profile === 'cliente' ? 'Suporte ao cliente' : undefined),
+      center: routing?.centerName,
+      report: savedContext?.report, assessment: savedContext?.assessment,
+      article: savedContext?.article?.title, guidance: savedContext?.guidance, outcome: savedContext?.outcome,
+    })
+    if (!input) {
+      setErrors({ form: 'Revise o texto do chamado. Use dados fictícios e remova e-mails, senhas, tokens ou códigos de autenticação.' })
+      return
+    }
+    pending.current = true
+    setSaving(true)
     try {
-      const ticket = saveTicket(profile, { category, title, description, priority, routing, context: includeContext && context ? { ...context, outcome: outcome.trim() || undefined } : undefined })
+      const summary = await summarizeTicket(input)
+      const ticket = saveTicket(profile, { category, title, description, priority, routing, context: savedContext, summary })
       if (context?.sessionId && context.sessionSource) recordSession(context.sessionId, profile, context.sessionSource, 'escalated')
       navigate(base + '/chamados/' + ticket.id, { replace: true, state: { created: true } })
     } catch {
       setErrors({ form: 'Não foi possível salvar. Verifique se o navegador permite armazenamento local e tente novamente.' })
+    } finally {
+      pending.current = false
+      setSaving(false)
     }
   }
 
@@ -76,25 +131,38 @@ export function NewTicket({ profile }: { profile: Profile }) {
       <form className="card ticket-form" noValidate onSubmit={submit}>
         <header className="ticket-section-title"><span className="icon-box"><TicketPlus size={21} aria-hidden /></span><div><h2>Detalhes da solicitação</h2><p>Categoria, título e descrição são obrigatórios.</p></div></header>
         {errors.form && <p className="alert error" role="alert">{errors.form}</p>}
-        <label>Categoria<select name="category" required defaultValue={selected?.title ?? ''} aria-invalid={Boolean(errors.category)} aria-describedby={errors.category ? 'category-error' : undefined}>
+        <fieldset disabled={saving} className="incident-fields">
+        {!context && <label>Preencher com caso fictício
+          <select value={caseLoaded} onChange={(event) => { if (event.target.value) loadExample(event.target.value); else setCaseLoaded('') }}>
+            <option value="">Escolher exemplo</option>
+            {demoIncidents[profile].map(({ id, title }) => <option key={id} value={id}>{title}</option>)}
+          </select>
+        </label>}
+        <label>Categoria<select name="category" required value={category} onChange={(event) => setCategory(event.target.value)} aria-invalid={Boolean(errors.category)} aria-describedby={errors.category ? 'category-error' : undefined}>
           <option value="">Selecione o assunto</option>{topics.map((topic) => <option key={topic.id} data-topic={topic.id}>{topic.title}</option>)}<option>Outro assunto</option>
         </select>{errors.category && <span className="field-error" id="category-error" role="alert">{errors.category}</span>}</label>
         {profile === 'colaborador' && <label>Centro de custo
-          <select name="costCenter"><option value="">Sem centro informado</option>{centers.map(({ code, name }) => <option key={code} value={code}>{code} · {name}</option>)}</select>
+          <select name="costCenter" value={center} onChange={(event) => setCenter(event.target.value)}><option value="">Sem centro informado</option>{centers.map(({ code, name }) => <option key={code} value={code}>{code} · {name}</option>)}</select>
           <small>Centros da demonstração. Chamados sem regra seguem para a triagem geral.</small>
         </label>}
-        <label>Título<input name="title" required maxLength={90} placeholder="Resuma o problema em uma frase" defaultValue={selected ? 'Dificuldade com ' + selected.title : ''} aria-invalid={Boolean(errors.title)} aria-describedby={errors.title ? 'title-error' : undefined} />
+        <label>Título<input name="title" required maxLength={90} placeholder="Resuma o problema em uma frase" value={title} onChange={(event) => setTitle(event.target.value)} aria-invalid={Boolean(errors.title)} aria-describedby={errors.title ? 'title-error' : undefined} />
           {errors.title && <span className="field-error" id="title-error" role="alert">{errors.title}</span>}</label>
         <label>Descrição<textarea name="description" required rows={5} maxLength={1200} value={description} onChange={(event) => setDescription(event.target.value)} placeholder="Quando começou? O que você estava tentando fazer? Qual mensagem apareceu?" aria-invalid={Boolean(errors.description)} aria-describedby={errors.description ? 'description-error privacy' : 'privacy'} />
           {errors.description && <span className="field-error" id="description-error" role="alert">{errors.description}</span>}
           <span className="form-note"><small id="privacy">Evite senhas, tokens e códigos de autenticação.</small><small>{description.length}/1200</small></span></label>
         <fieldset className="priority-field"><legend>Qual é o impacto?</legend>
           <div className="priority-options">
-            <label><input type="radio" name="priority" value="Normal" defaultChecked /><span>Normal<small>A atividade pode continuar.</small></span></label>
-            <label><input type="radio" name="priority" value="Alta" /><span>Alto<small>Uma atividade essencial está parada.</small></span></label>
+            <label><input type="radio" name="priority" value="Normal" checked={priority === 'Normal'} onChange={() => setPriority('Normal')} /><span>Normal<small>A atividade pode continuar.</small></span></label>
+            <label><input type="radio" name="priority" value="Alta" checked={priority === 'Alta'} onChange={() => setPriority('Alta')} /><span>Alto<small>Uma atividade essencial está parada.</small></span></label>
           </div>
         </fieldset>
-        <div className="actions ticket-submit"><button className="button primary">Registrar chamado</button><Link className="button secondary" to={base + '/chamados'}>Cancelar</Link></div>
+        <button type="button" className="button secondary" aria-expanded={showDetails} aria-controls="incident-details" onClick={() => setShowDetails(!showDetails)}>{showDetails ? 'Recolher condições do incidente' : 'Adicionar condições do incidente'}</button>
+        <div id="incident-details" className="incident-fields" hidden={!showDetails}>
+          {incidentFields.map(([field, label]) => <label key={field}>{label}<textarea rows={field === 'tests' ? 3 : 2} maxLength={600} value={details[field] ?? ''} onChange={(event) => setDetails({ ...details, [field]: event.target.value })} /></label>)}
+        </div>
+        </fieldset>
+        {saving && <p role="status">Montando o resumo para o suporte…</p>}
+        <div className="actions ticket-submit"><button className="button primary" disabled={saving}>Registrar chamado</button>{!saving && <Link className="button secondary" to={base + '/chamados'}>Cancelar</Link>}</div>
       </form>
       <aside className="card ticket-guide">
         {context ? <>
@@ -103,11 +171,11 @@ export function NewTicket({ profile }: { profile: Profile }) {
           <ContextDetails context={{ ...context, outcome: undefined }} />
           <label>Resultado dos testes
             <textarea name="outcome" rows={3} maxLength={600} value={outcome} onChange={(event) => setOutcome(event.target.value)}
-              disabled={!includeContext} placeholder="Ex.: testei em outro navegador e a falha continuou."
+              disabled={!includeContext || saving} placeholder="Ex.: testei em outro navegador e a falha continuou."
               aria-invalid={Boolean(errors.outcome)} aria-describedby={errors.outcome ? 'outcome-error' : undefined} />
             {errors.outcome && <span id="outcome-error" className="field-error" role="alert">{errors.outcome}</span>}
           </label>
-          <label className="context-toggle"><input type="checkbox" checked={includeContext} onChange={(event) => setIncludeContext(event.target.checked)} /> Incluir contexto no chamado</label>
+          <label className="context-toggle"><input type="checkbox" checked={includeContext} disabled={saving} onChange={(event) => setIncludeContext(event.target.checked)} /> Incluir contexto no chamado</label>
         </> : <>
           <header className="ticket-section-title"><span className="icon-box"><Info size={20} aria-hidden /></span><h2>O que incluir</h2></header>
           <ul className="ticket-guide-list"><li>Quando o problema começou.</li><li>A mensagem de erro e a atividade afetada.</li><li>O que você já tentou fazer.</li></ul>
@@ -159,6 +227,7 @@ export function TicketDetail({ profile, id, created }: { profile: Profile, id?: 
           {ticket.routing && <><dt>Centro de custo</dt><dd>{ticket.routing.centerName ? ticket.routing.centerCode + ' · ' + ticket.routing.centerName : 'Sem centro informado'}</dd>
             <dt>Fila de atendimento</dt><dd>{ticket.routing.queue}</dd></>}
         </dl>
+        {ticket.summary && <SummaryDetails summary={ticket.summary} />}
         {ticket.context && <div className="saved-context"><h3>Resumo do diagnóstico</h3><ContextDetails context={ticket.context} /></div>}
       </section>
       <TicketTimeline ticket={ticket} />
@@ -171,7 +240,7 @@ export function TicketTimeline({ ticket }: { ticket: Ticket }) {
   return <section className="card"><h2>Linha do tempo</h2>
     <ol className="ticket-timeline">
       <li><strong>Chamado registrado</strong><time dateTime={ticket.date}>{formatDateTime(ticket.date)}</time>
-        {ticket.context && <p>Resumo do diagnóstico incluído no registro.</p>}</li>
+        {(ticket.summary || ticket.context) && <p>Resumo para o suporte incluído no registro.</p>}</li>
       {events.map((event, index) => <li key={event.at + ':' + index}><TicketUpdate event={event} /></li>)}
     </ol>
   </section>

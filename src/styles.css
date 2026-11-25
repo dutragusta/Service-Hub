@@ -650,3 +650,12 @@ progress { width: min(100%, 20rem); accent-color: var(--action); height: .75rem;
 .account-brand { margin: 1rem 0; }
 .account-workspace .ticket-form { padding: 0; }
 .entry-access-links { margin-top: 1rem; }
+
+.incident-fields { display: grid; min-width: 0; gap: 1rem; border: 0; margin: 0; padding: 0; }
+.incident-fields[hidden] { display: none; }
+.incident-fields > button { justify-self: start; text-align: left; }
+.ticket-summary { overflow-wrap: anywhere; }
+.ticket-summary dl { display: grid; gap: .75rem; }
+.ticket-summary dl > div { display: grid; gap: .25rem; }
+.ticket-summary dd { margin-inline-start: 0; }
+.ticket-summary h4 { margin-block: 1rem .35rem; }

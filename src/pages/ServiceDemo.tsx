@@ -3,12 +3,17 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Heading, KnowledgeSource } from '../components/ui'
 import { getTopics, knowledgeReference } from '../services/operations'
+import { SummaryDetails } from '../components/TicketSummary'
+import { demoIncidents } from '../data/demo-incidents'
+import { summarizeTicket } from '../services/summarization'
+import type { TicketSummary } from '../types'
 
 type Stage = 'ready' | 'guidance' | 'queue' | 'review' | 'closed'
 type Event = { title: string; detail: string }
 
 const protocol = 'DEMO-1042'
-const emailReport = 'A página de login abre, mas não consigo entrar no portal com a minha conta.'
+const emailIncident = demoIncidents.cliente[0]
+const emailReport = 'Desde as 10h20, a página de login abre, mas aparece “Acesso indisponível para esta conta”. Preciso acompanhar uma solicitação antes das 12h.'
 const states: Record<Exclude<Stage, 'ready'>, { label: string; next: string; statusClass: string }> = {
   guidance: { label: 'Aguardando confirmação', next: 'Cliente testa a orientação', statusClass: 'progress' },
   queue: { label: 'Na fila de suporte', next: 'Analista valida o encaminhamento', statusClass: 'open' },
@@ -20,6 +25,8 @@ export function ServiceDemo() {
   const [stage, setStage] = useState<Stage>('ready')
   const [history, setHistory] = useState<Event[]>([])
   const [followUp, setFollowUp] = useState('')
+  const [summary, setSummary] = useState<TicketSummary>()
+  const [summarizing, setSummarizing] = useState(false)
   const [rating, setRating] = useState<number>()
   const topic = getTopics('cliente').find((item) => item.id === 'portal')
   const canAnswer = Boolean(topic?.steps.length)
@@ -31,7 +38,23 @@ export function ServiceDemo() {
     setStage(next)
   }
 
+  async function generateSummary(detail: string) {
+    setSummarizing(true)
+    try {
+      setSummary(await summarizeTicket({
+        ...emailIncident, description: emailReport, profile: 'cliente', category: 'Acesso ao portal',
+        channel: 'E-mail simulado', queue: 'Suporte ao cliente',
+        tests: detail ? emailIncident.tests : undefined,
+        article: detail ? topic?.title : undefined,
+        guidance: detail ? guidance : undefined, outcome: detail || undefined,
+      }))
+    } finally {
+      setSummarizing(false)
+    }
+  }
+
   function receiveEmail() {
+    if (!canAnswer) void generateSummary('')
     advance(canAnswer ? 'guidance' : 'queue',
       { title: 'E-mail recebido', detail: `Chamado ${protocol} aberto na simulação.` },
       { title: 'Triagem automática', detail: canAnswer
@@ -41,8 +64,9 @@ export function ServiceDemo() {
   }
 
   function escalate() {
-    const detail = 'O cliente conferiu a conta e tentou a recuperação pelo portal, mas continua sem acesso.'
+    const detail = 'Às 10h45, o cliente confirmou a recuperação pelo portal. A nova tentativa em janela privativa exibiu a mesma recusa. O acesso continua indisponível.'
     setFollowUp(detail)
+    void generateSummary(detail)
     advance('queue',
       { title: 'Cliente respondeu ao mesmo protocolo', detail },
       { title: 'Encaminhado para Suporte ao cliente', detail: 'A categoria e a fila foram sugeridas. O analista recebe o relato e o resultado da orientação.' })
@@ -53,6 +77,7 @@ export function ServiceDemo() {
     setHistory([])
     setFollowUp('')
     setRating(undefined)
+    setSummary(undefined)
   }
 
   return <>
@@ -95,6 +120,8 @@ export function ServiceDemo() {
               {followUp && topic && <><dt>Artigo usado</dt><dd><KnowledgeSource profile="cliente" article={knowledgeReference(topic)} /></dd></>}
               <dt>Retorno do cliente</dt><dd>{followUp || 'Aguardando atendimento.'}</dd>
             </dl>
+            {summarizing && <p role="status">Montando o resumo para o suporte…</p>}
+            {summary && <SummaryDetails summary={summary} />}
             <div className="actions">{stage === 'queue'
               ? <button type="button" className="button primary" onClick={() => advance('review', { title: 'Analista validou e assumiu', detail: 'Categoria e fila confirmadas. O atendimento continua com o mesmo protocolo.' })}>Validar e assumir chamado</button>
               : <button type="button" className="button primary" onClick={() => advance('closed', { title: 'Analista registrou a solução', detail: 'Nesta simulação, a equipe regularizou a associação da conta do cliente. O cliente confirmou que voltou a acessar o portal.' })}>Registrar solução simulada</button>}</div>
@@ -114,7 +141,7 @@ export function ServiceDemo() {
           <ol className="ticket-timeline" aria-live="polite">{history.map((item) => <li key={item.title}><strong>{item.title}</strong><p>{item.detail}</p></li>)}</ol>
         </section>
       </div>
-      <div className="actions"><button type="button" className="button secondary" onClick={reset}><RotateCcw size={17} aria-hidden /> Reiniciar demonstração</button></div>
+      <div className="actions"><button type="button" className="button secondary" onClick={reset} disabled={summarizing}><RotateCcw size={17} aria-hidden /> Reiniciar demonstração</button></div>
     </>}
   </>
 }

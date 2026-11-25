@@ -1,3 +1,4 @@
+import { SummaryDetails } from '../components/TicketSummary'
 import { Permissions } from './Permissions'
 import { PortalAccounts } from './PortalAccess'
 import { CostCenters } from './CostCenters'
@@ -142,6 +143,7 @@ function SupportTicketForm({ profile, ticketId, identity }: { profile: Profile, 
         <dl><dt>Responsável</dt><dd>{ticket.assignee ?? 'Sem responsável'}</dd>
           {ticket.routing && <><dt>Centro de custo</dt><dd>{ticket.routing.centerName ?? 'Sem centro informado'}</dd><dt>Fila</dt><dd>{ticket.routing.queue}</dd></>}
         </dl>
+        {ticket.summary && <SummaryDetails summary={ticket.summary} />}
         {ticket.context && <><h3>Resumo do diagnóstico</h3><ContextDetails context={ticket.context} /></>}
         {ticket.status === 'Aberto' && <button className="button primary" disabled={pending} onClick={() => void apply('claim')}>Assumir chamado</button>}
         {ticket.status === 'Em atendimento' && <div className="team-editor">
