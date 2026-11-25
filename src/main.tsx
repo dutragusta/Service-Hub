@@ -57,6 +57,10 @@ function PortalShell({ conversation, update }: { conversation?: Conversation, up
       <div className="header-actions topbar-actions">
         <NavLink className="header-icon" to={base + '/notificacoes'} aria-label="Notificações" title="Notificações"><Bell size={21} aria-hidden /></NavLink>
         <NavLink className="header-icon" to={base + '/conhecimento'} aria-label="Ajuda" title="Ajuda"><CircleHelp size={22} aria-hidden /></NavLink>
+        <div className="customer-account-links" aria-label="Conta do cliente">
+          <Link className="button secondary" to="/acesso/cliente">Entrar</Link>
+          <Link className="button primary" to="/acesso/cliente/cadastro">Cadastrar</Link>
+        </div>
         <ProfileMenu profilePath={base + '/perfil'} />
       </div>
     </header>

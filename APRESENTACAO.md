@@ -30,3 +30,7 @@ Use o mesmo navegador e o mesmo endereço durante toda a demonstração. Os cham
 A API local lê registros fictícios, exclusivos do portal do cliente. O assistente aplica regras ao catálogo recebido e exibe a referência. O backend local monta o resumo detalhado a partir dos fatos informados. O papel de analista é simulado e fica disponível nesta execução em loopback. O painel administrativo, convites e cadastro autenticado dependem da hospedagem com controle de acesso.
 
 A integração com modelo externo é opcional no servidor da hospedagem. A edição offline usa regras e não faz chamadas externas. Registro de chamados, troca de status e notificações do protótipo têm persistência no navegador. Banco compartilhado, autenticação corporativa e integrações de atendimento exigem homologação.
+
+## Conta de demonstração
+
+Use **Cadastrar** e **Entrar** no cabeçalho. No pacote offline e no GitHub Pages, o cadastro usa dados fictícios e um e-mail `@example.test`. Após cadastrar, use o mesmo e-mail para entrar e ver **Meu perfil**. O cadastro é local ao navegador, sem envio de e-mail ou senha, e serve apenas para apresentar a jornada da conta.

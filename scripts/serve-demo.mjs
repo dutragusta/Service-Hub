@@ -19,6 +19,7 @@ const originHost = new URL(origin).host
 const identity = 'analista.demo@example.test'
 const routes = new Map([
   ['/api/access', { role: 'support', email: identity, demo: true }],
+  ['/api/portal/account', { demo: true }],
 ])
 
 const server = createServer(async (incoming, outgoing) => {

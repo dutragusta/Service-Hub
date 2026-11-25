@@ -103,3 +103,5 @@ Veja [Segurança e roteiro de demonstração](SEGURANCA.md). Execute `node scrip
 Para executar a aplicação completa localmente, rode `npm ci`, `npm run build` e `npm run demo`. Abra `http://127.0.0.1:4173/`. O pacote compilado pode ser iniciado diretamente com `node scripts/serve-demo.mjs` ou pelo `iniciar-demo.cmd` no Windows.
 
 O ambiente local serve a base fictícia por API, gera o resumo no servidor e permite concluir o atendimento pela fila de analista simulada. O catálogo e as citações exibem referência, revisão e equipe fictícia responsável. Consulte [APRESENTACAO.md](APRESENTACAO.md) para demonstrar a jornada e seus limites.
+
+No pacote offline e no GitHub Pages, **Entrar** e **Cadastrar** demonstram a conta do cliente com dados fictícios e e-mail `@example.test`. O cadastro fica no navegador. O ambiente autenticado usa a verificação de conta do servidor.

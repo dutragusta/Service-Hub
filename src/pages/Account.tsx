@@ -1,3 +1,5 @@
+import { useState } from 'react'
+import { currentDemoCustomer, leaveDemoCustomer } from '../services/demo-account'
 import { Link } from 'react-router-dom'
 import { Empty, Heading } from '../components/ui'
 import { profiles } from '../demo'
@@ -6,12 +8,18 @@ import { formatDateTime, readTickets } from '../services/support'
 import type { Profile, TicketEvent } from '../types'
 
 export function MyProfile({ profile, role }: { profile: Profile; role?: TeamRole | null }) {
+  const [demoCustomer, setDemoCustomer] = useState(currentDemoCustomer)
   const access = role === 'admin' ? 'Administrador' : role === 'support' ? 'Suporte' : profiles[profile].title
   return <>
     <Heading title="Meu perfil" description="Consulte o portal e o perfil de acesso em uso." />
     <section className="card narrow" aria-label="Perfil em uso">
-      <dl><dt>Portal</dt><dd>{profiles[profile].portal}</dd><dt>Perfil</dt><dd>{access}</dd></dl>
-      <Link className="button secondary" to="/cliente">Voltar ao portal</Link>
+      <dl><dt>Portal</dt><dd>{profiles[profile].portal}</dd><dt>Perfil</dt><dd>{access}</dd>{demoCustomer && <>
+        <dt>Nome fictício</dt><dd>{demoCustomer.name}</dd><dt>Empresa fictícia</dt><dd>{demoCustomer.company}</dd><dt>E-mail de demonstração</dt><dd>{demoCustomer.email}</dd>
+      </>}</dl>
+      <div className="actions">
+        <Link className="button secondary" to="/cliente">Voltar ao portal</Link>
+        {demoCustomer && <button type="button" className="button secondary" onClick={() => { leaveDemoCustomer(); setDemoCustomer(undefined) }}>Sair da conta de demonstração</button>}
+      </div>
     </section>
   </>
 }

@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { Brand, Heading } from '../components/ui'
 import { accessRequest, queuePath, settingsPath, useTeamIdentity } from '../services/access'
+import { enterDemoCustomer } from '../services/demo-account'
 import type { Profile } from '../types'
 
 type ApplicationStatus = 'pending' | 'approved' | 'rejected'
@@ -17,8 +18,9 @@ export function PortalAccess({ registration = false }: { registration?: boolean 
 }
 
 function PortalAccessForm({ registration }: { registration: boolean }) {
+  const [feedback, setFeedback] = useState('')
   const [access, setAccess] = useState<Access>()
-  const [check, setCheck] = useState<'loading' | 'ready' | 'signed-out' | 'failed'>('loading')
+  const [check, setCheck] = useState<'loading' | 'ready' | 'signed-out' | 'failed' | 'demo'>(() => import.meta.env.MODE === 'pages' || import.meta.env.DEV ? 'demo' : 'loading')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [verified, setVerified] = useState(false)
@@ -29,13 +31,15 @@ function PortalAccessForm({ registration }: { registration: boolean }) {
   const signIn = '/signin-with-chatgpt?return_to=' + encodeURIComponent('/#' + accessPath + (registration ? '/cadastro' : ''))
 
   useEffect(() => {
+    if (import.meta.env.MODE === 'pages' || import.meta.env.DEV) return
     const controller = new AbortController()
     async function load() {
       try {
         const response = await fetch(requestPath, { cache: 'no-store', signal: controller.signal })
         if (response.status === 401) { setCheck('signed-out'); return }
         if (!response.ok || !response.headers.get('content-type')?.includes('application/json')) throw new Error()
-        const result: Access = await response.json()
+        const result: Access & { demo?: boolean } = await response.json()
+        if (result.demo) { setCheck('demo'); return }
         setAccess(result)
         setCheck('ready')
       } catch {
@@ -48,15 +52,21 @@ function PortalAccessForm({ registration }: { registration: boolean }) {
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (check !== 'ready' || saving) return
+    if ((check !== 'ready' && check !== 'demo') || saving) return
     const form = new FormData(event.currentTarget)
     const details = { profile, action: registration ? 'register' : 'verify', email: String(form.get('email') ?? '').trim() }
+    const organization = { name: String(form.get('name') ?? '').trim(), company: String(form.get('company') ?? '').trim() }
     setError('')
+    setFeedback('')
     setSaving(true)
     try {
-      const result = await accessRequest<Access>('/api/portal/account', registration ? {
-        ...details, name: String(form.get('name') ?? '').trim(), company: String(form.get('company') ?? '').trim(),
-      } : details)
+      if (check === 'demo') {
+        enterDemoCustomer(details.email, registration ? organization : undefined)
+        if (registration) setFeedback('Cadastro fictício concluído. Use Entrar com o mesmo e-mail.')
+        else navigate('/cliente/perfil')
+        return
+      }
+      const result = await accessRequest<Access>('/api/portal/account', registration ? { ...details, ...organization } : details)
       if (result.canEnter) { navigate('/' + profile); return }
       setAccess(result)
       setVerified(true)
@@ -77,18 +87,20 @@ function PortalAccessForm({ registration }: { registration: boolean }) {
     <section className="card team-editor" aria-label={registration ? 'Cadastro' : 'Acesso ao portal'}>
       {check === 'loading' && <p role="status">Verificando sua sessão…</p>}
       {check === 'signed-out' && <p className="alert">Entre com sua conta do ChatGPT para confirmar seu e-mail e continuar.</p>}
+      {check === 'demo' && <p className="alert">Modo demonstração. Use nome e empresa fictícios e um e-mail como <strong>cliente@example.test</strong>. A conta fica neste navegador.</p>}
+      {feedback && <p role="status" className="alert success">{feedback} <Link to={accessPath}>Entrar</Link></p>}
       {check === 'failed' && <p className="alert" role="status">A verificação requer uma sessão na versão hospedada. Na demonstração, use apenas dados fictícios.</p>}
       {account && account.status !== 'approved' && <p className="alert" role="status">Cadastro {statusLabels[account.status].toLowerCase()}{account.status === 'pending' ? '. Aguarde a revisão pela equipe responsável.' : '.'}</p>}
       {verified && !account && <p className="alert" role="status">E-mail confirmado. Solicite seu cadastro para continuar.</p>}
       {registration && account?.status === 'approved' ? <div><Link className="button primary" to={accessPath}>Ir para entrada</Link></div> :
         <form className="ticket-form" onSubmit={submit}>
           {registration && <label>Nome completo<input autoComplete="name" name="name" required maxLength={100} /></label>}
-          <label>E-mail profissional<input type="email" autoComplete="email" name="email" required maxLength={254} /></label>
+          <label>E-mail profissional<input type="email" autoComplete="email" name="email" required maxLength={254} placeholder={check === 'demo' ? 'cliente@example.test' : undefined} /></label>
           {registration && <label>Empresa<input autoComplete="organization" name="company" required maxLength={120} /></label>}
-          <p className="muted">Use o mesmo e-mail verificado pela sua sessão. Para testes, use apenas contas e dados autorizados.</p>
+          {check !== 'demo' && <p className="muted">Use o mesmo e-mail verificado pela sua sessão.</p>}
           {error && <p className="alert error" role="alert">{error}</p>}
           <div>{check === 'signed-out' ? <a className="button primary" href={signIn} target="_top">Entrar com ChatGPT</a> :
-            <button className="button primary" disabled={check !== 'ready' || saving || (registration && account?.status === 'pending')} type="submit">{saving ? 'Verificando…' : registration ? 'Enviar cadastro' : 'Verificar e-mail'}</button>}</div>
+            <button className="button primary" disabled={(check !== 'ready' && check !== 'demo') || saving || (registration && account?.status === 'pending')} type="submit">{saving ? 'Verificando…' : registration ? 'Enviar cadastro' : check === 'demo' ? 'Entrar' : 'Verificar e-mail'}</button>}</div>
         </form>}
       <div className="actions">
         {!registration && !access?.canEnter && <Link to={accessPath + '/cadastro'}>Solicitar cadastro</Link>}

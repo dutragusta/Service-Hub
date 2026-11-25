@@ -664,3 +664,10 @@ progress { width: min(100%, 20rem); accent-color: var(--action); height: .75rem;
 .knowledge-metadata dd { margin: 0; }
 
 .team-footer { display: flex; justify-content: space-between; gap: .75rem; flex-wrap: wrap; }
+
+.customer-account-links { display: flex; align-items: center; gap: .35rem; }
+.customer-account-links .button { min-height: 38px; padding: .35rem .65rem; white-space: nowrap; }
+@media (max-width: 480px) {
+  .customer-account-links .button { min-height: 44px; padding-inline: .45rem; }
+  .topbar-actions:has(.customer-account-links) { flex-wrap: wrap; justify-content: flex-end; }
+}
