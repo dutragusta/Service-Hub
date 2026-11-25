@@ -1,10 +1,9 @@
 import { SummaryDetails } from '../components/TicketSummary'
 import { Permissions } from './Permissions'
 import { PortalAccounts } from './PortalAccess'
-import { CostCenters } from './CostCenters'
 import { canHandleTicket, triageQueue } from '../services/routing'
 import { queuePath, requireTeamRole, settingsPath, type TeamIdentity, type TeamRole } from '../services/access'
-import { BarChart3, BookOpen, Building2, ContactRound, Network, Users } from 'lucide-react'
+import { BarChart3, BookOpen, Building2, Users } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { Link, Navigate, NavLink, Route, Routes, useParams } from 'react-router-dom'
 import { Empty, Heading, StatusLabel, TopicIcon } from '../components/ui'
@@ -13,12 +12,12 @@ import { readTickets, updateTicket } from '../services/support'
 import type { Profile, Topic } from '../types'
 import { ContextDetails, TicketTimeline } from './Tickets'
 
-const audiences = ['colaborador', 'cliente'] as const
+const audiences = ['cliente'] as const
 const statuses = ['Aberto', 'Em atendimento', 'Resolvido'] as const
 const audienceLabel = { colaborador: 'Colaborador', cliente: 'Cliente' }
 
 function Restricted() {
-  return <Empty title="Acesso restrito"><Link to="/colaborador">Voltar ao portal do colaborador</Link></Empty>
+  return <Empty title="Acesso restrito"><Link to="/acesso/equipe">Ir para o acesso da equipe</Link></Empty>
 }
 
 export function TeamSettings({ role }: { role?: TeamRole | null }) {
@@ -30,18 +29,14 @@ export function TeamSettings({ role }: { role?: TeamRole | null }) {
     <div className="settings-layout">
       <nav className="settings-nav" aria-label="Navegação de configurações">
         <NavLink to={settingsPath} end><Users size={18} aria-hidden /> Usuários</NavLink>
-        <NavLink to={settingsPath + '/colaboradores'}><ContactRound size={18} aria-hidden /> Colaboradores</NavLink>
         <NavLink to={settingsPath + '/clientes'}><Building2 size={18} aria-hidden /> Clientes</NavLink>
-        <NavLink to={settingsPath + '/centros-de-custo'}><Network size={18} aria-hidden /> Centros de custo</NavLink>
         <NavLink to={settingsPath + '/visao-geral'}><BarChart3 size={18} aria-hidden /> Visão geral</NavLink>
       </nav>
       <div className="settings-content">
         <Routes>
           <Route index element={<Permissions />} />
-          <Route path="colaboradores" element={<PortalAccounts key="colaborador" profile="colaborador" />} />
           <Route path="clientes" element={<PortalAccounts key="cliente" profile="cliente" />} />
           <Route path="permissoes" element={<Navigate replace to={settingsPath} />} />
-          <Route path="centros-de-custo" element={<CostCenters />} />
           <Route path="visao-geral" element={<Administration />} />
           <Route path="*" element={<Empty title="Seção indisponível"><Link to={settingsPath}>Voltar a configurações</Link></Empty>} />
         </Routes>
@@ -101,7 +96,7 @@ function SupportQueue({ identity }: { identity: TeamIdentity }) {
 
 function SupportTicket({ identity }: { identity: TeamIdentity }) {
   const { audience: profile, ticketId } = useParams()
-  if (profile !== 'cliente' && profile !== 'colaborador') return <Empty title="Chamado indisponível"><Link to={queuePath}>Voltar à fila</Link></Empty>
+  if (profile !== 'cliente') return <Empty title="Chamado indisponível"><Link to={queuePath}>Voltar à fila</Link></Empty>
   return <SupportTicketForm key={profile + ticketId} profile={profile} ticketId={ticketId ?? ''} identity={identity} />
 }
 
@@ -142,7 +137,7 @@ function SupportTicketForm({ profile, ticketId, identity }: { profile: Profile, 
         <div className="section-heading"><h2>Atendimento</h2><StatusLabel status={ticket.status} /></div>
         <p className="preserve">{ticket.description}</p>
         <dl><dt>Responsável</dt><dd>{ticket.assignee ?? 'Sem responsável'}</dd>
-          {ticket.routing && <><dt>Centro de custo</dt><dd>{ticket.routing.centerName ?? 'Sem centro informado'}</dd><dt>Fila</dt><dd>{ticket.routing.queue}</dd></>}
+          {ticket.routing && <><dt>Fila</dt><dd>{ticket.routing.queue}</dd></>}
         </dl>
         {ticket.summary && <SummaryDetails summary={ticket.summary} />}
         {ticket.context && <><h3>Resumo do diagnóstico</h3><ContextDetails context={ticket.context} /></>}
@@ -162,7 +157,7 @@ function SupportTicketForm({ profile, ticketId, identity }: { profile: Profile, 
 }
 
 function Administration() {
-  const [profile, setProfile] = useState<Profile>('colaborador')
+  const profile = 'cliente' as const
   const [article, setArticle] = useState('')
   const topics = getTopics(profile)
   const selected = topics.find(({ id }) => id === article)
@@ -179,7 +174,6 @@ function Administration() {
     <section className="card admin-knowledge" aria-labelledby="admin-knowledge">
       <header className="ticket-section-title"><span className="icon-box"><BookOpen size={20} aria-hidden /></span><div><h2 id="admin-knowledge">Base de conhecimento</h2><p>As edições são usadas pela busca, pelos artigos e pelo assistente neste navegador.</p></div></header>
       <div className="filter-bar">
-        <label>Portal<select value={profile} onChange={(event) => { setProfile(event.target.value as Profile); setArticle('') }}>{audiences.map((item) => <option key={item} value={item}>{audienceLabel[item]}</option>)}</select></label>
         <label>Artigo<select value={article} onChange={(event) => setArticle(event.target.value)}><option value="">Selecione um artigo</option>{topics.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</select></label>
       </div>
       {selected && <ArticleEditor key={profile + selected.id} profile={profile} topic={selected} />}

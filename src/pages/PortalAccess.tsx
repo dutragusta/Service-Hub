@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
-import { Brand, Empty, Heading } from '../components/ui'
-import { accessRequest, queuePath, settingsPath, useTeamRole } from '../services/access'
+import { Brand, Heading } from '../components/ui'
+import { accessRequest, queuePath, settingsPath, useTeamIdentity } from '../services/access'
 import type { Profile } from '../types'
 
 type ApplicationStatus = 'pending' | 'approved' | 'rejected'
@@ -12,22 +12,20 @@ const statusLabels = { pending: 'Em análise', approved: 'Aprovado', rejected: '
 
 export function PortalAccess({ registration = false }: { registration?: boolean }) {
   const { profile } = useParams()
-  if (profile !== 'cliente' && profile !== 'colaborador') return <main id="main" className="workspace"><Empty title="Perfil indisponível"><Link to="/">Escolher perfil</Link></Empty></main>
-  if (registration && profile === 'colaborador') return <Navigate replace to="/acesso/colaborador" />
-  return <PortalAccessForm key={profile + registration} profile={profile} registration={registration} />
+  if (profile !== 'cliente') return <Navigate replace to="/cliente" />
+  return <PortalAccessForm key={String(registration)} registration={registration} />
 }
 
-function PortalAccessForm({ profile, registration }: { profile: Profile; registration: boolean }) {
+function PortalAccessForm({ registration }: { registration: boolean }) {
   const [access, setAccess] = useState<Access>()
   const [check, setCheck] = useState<'loading' | 'ready' | 'signed-out' | 'failed'>('loading')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [verified, setVerified] = useState(false)
   const navigate = useNavigate()
-  const requestPath = '/api/portal/account?profile=' + profile
-  const accessPath = '/acesso/' + profile
-  const employee = profile === 'colaborador'
-  const audience = employee ? 'Colaborador' : 'Cliente'
+  const profile = 'cliente'
+  const requestPath = '/api/portal/account?profile=cliente'
+  const accessPath = '/acesso/cliente'
   const signIn = '/signin-with-chatgpt?return_to=' + encodeURIComponent('/#' + accessPath + (registration ? '/cadastro' : ''))
 
   useEffect(() => {
@@ -72,20 +70,20 @@ function PortalAccessForm({ profile, registration }: { profile: Profile; registr
 
   const account = access?.account
   return <main id="main" className="workspace account-workspace">
-    <Link className="back" to="/">Escolher perfil</Link>
+    <Link className="back" to="/cliente">Voltar ao portal do cliente</Link>
     <div className="account-brand"><Brand /></div>
-    <Heading title={registration ? 'Cadastro · Cliente' : 'Entrar · ' + audience}
+    <Heading title={registration ? 'Cadastro · Cliente' : 'Entrar · Cliente'}
       description={registration ? 'Informe os dados da sua empresa para solicitar acesso.' : 'Informe o e-mail da sua conta para verificar o acesso.'} />
     <section className="card team-editor" aria-label={registration ? 'Cadastro' : 'Acesso ao portal'}>
       {check === 'loading' && <p role="status">Verificando sua sessão…</p>}
       {check === 'signed-out' && <p className="alert">Entre com sua conta do ChatGPT para confirmar seu e-mail e continuar.</p>}
       {check === 'failed' && <p className="alert" role="status">A verificação requer uma sessão na versão hospedada. Na demonstração, use apenas dados fictícios.</p>}
       {account && account.status !== 'approved' && <p className="alert" role="status">Cadastro {statusLabels[account.status].toLowerCase()}{account.status === 'pending' ? '. Aguarde a revisão pela equipe responsável.' : '.'}</p>}
-      {verified && !account && !employee && <p className="alert" role="status">E-mail confirmado. Solicite seu cadastro para continuar.</p>}
+      {verified && !account && <p className="alert" role="status">E-mail confirmado. Solicite seu cadastro para continuar.</p>}
       {registration && account?.status === 'approved' ? <div><Link className="button primary" to={accessPath}>Ir para entrada</Link></div> :
         <form className="ticket-form" onSubmit={submit}>
           {registration && <label>Nome completo<input autoComplete="name" name="name" required maxLength={100} /></label>}
-          <label>{employee ? 'E-mail corporativo' : 'E-mail profissional'}<input type="email" autoComplete="email" name="email" required maxLength={254} /></label>
+          <label>E-mail profissional<input type="email" autoComplete="email" name="email" required maxLength={254} /></label>
           {registration && <label>Empresa<input autoComplete="organization" name="company" required maxLength={120} /></label>}
           <p className="muted">Use o mesmo e-mail verificado pela sua sessão. Para testes, use apenas contas e dados autorizados.</p>
           {error && <p className="alert error" role="alert">{error}</p>}
@@ -93,7 +91,7 @@ function PortalAccessForm({ profile, registration }: { profile: Profile; registr
             <button className="button primary" disabled={check !== 'ready' || saving || (registration && account?.status === 'pending')} type="submit">{saving ? 'Verificando…' : registration ? 'Enviar cadastro' : 'Verificar e-mail'}</button>}</div>
         </form>}
       <div className="actions">
-        {!employee && !registration && !access?.canEnter && <Link to={accessPath + '/cadastro'}>Solicitar cadastro</Link>}
+        {!registration && !access?.canEnter && <Link to={accessPath + '/cadastro'}>Solicitar cadastro</Link>}
         {registration && account?.status !== 'approved' && <Link to={accessPath}>Voltar para entrada</Link>}
         <Link to={'/' + profile}>Explorar demonstração</Link>
       </div>
@@ -147,16 +145,17 @@ export function PortalAccounts({ profile }: { profile: Profile }) {
 
 
 export function StaffAccess() {
-  const role = useTeamRole(true)
+  const identity = useTeamIdentity(true)
+  const role = identity?.role
   const signIn = '/signin-with-chatgpt?return_to=' + encodeURIComponent('/#/acesso/equipe')
   return <main id="main" className="workspace account-workspace">
-    <Link className="back" to="/">Escolher perfil</Link>
+    <Link className="back" to="/cliente">Voltar ao portal do cliente</Link>
     <div className="account-brand"><Brand /></div>
     <Heading title="Acesso da equipe" description="Entrada para administradores e equipe de suporte." />
     <section className="card team-editor" aria-label="Acesso da equipe">
       {role === undefined ? <p role="status">Verificando acesso…</p> : role ? (
-        <div><Link className="button primary" to={role === 'admin' ? settingsPath : queuePath}>Entrar como {role === 'admin' ? 'administrador' : 'suporte'}</Link></div>
-      ) : <>
+        <div><Link className="button primary" to={role === 'admin' ? settingsPath : queuePath}>{identity?.demo ? 'Abrir fila do analista · simulação local' : role === 'admin' ? 'Abrir administração' : 'Abrir fila de suporte'}</Link></div>
+      ) : import.meta.env.MODE === 'pages' ? <p>A fila do analista está disponível no pacote local e no ambiente autenticado.</p> : <>
         <p>Entre com a conta autorizada. Para ativar um novo cadastro de equipe, use o link de convite fornecido pelo administrador.</p>
         <div><a className="button primary" href={signIn} target="_top">Entrar com ChatGPT</a></div>
       </>}

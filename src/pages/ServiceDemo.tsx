@@ -5,6 +5,7 @@ import { Heading, KnowledgeSource } from '../components/ui'
 import { getTopics, knowledgeReference } from '../services/operations'
 import { SummaryDetails } from '../components/TicketSummary'
 import { demoIncidents } from '../data/demo-incidents'
+import { routeCustomerTicket } from '../services/routing'
 import { summarizeTicket } from '../services/summarization'
 import type { TicketSummary } from '../types'
 
@@ -12,6 +13,7 @@ type Stage = 'ready' | 'guidance' | 'queue' | 'review' | 'closed'
 type Event = { title: string; detail: string }
 
 const protocol = 'DEMO-1042'
+const portalQueue = routeCustomerTicket('portal').queue
 const emailIncident = demoIncidents.cliente[0]
 const emailReport = 'Desde as 10h20, a página de login abre, mas aparece “Acesso indisponível para esta conta”. Preciso acompanhar uma solicitação antes das 12h.'
 const states: Record<Exclude<Stage, 'ready'>, { label: string; next: string; statusClass: string }> = {
@@ -43,9 +45,9 @@ export function ServiceDemo() {
     try {
       setSummary(await summarizeTicket({
         ...emailIncident, description: emailReport, profile: 'cliente', category: 'Acesso ao portal',
-        channel: 'E-mail simulado', queue: 'Suporte ao cliente',
+        channel: 'E-mail simulado', queue: portalQueue,
         tests: detail ? emailIncident.tests : undefined,
-        article: detail ? topic?.title : undefined,
+        article: detail && topic ? [topic.code, topic.title, topic.revision && 'Revisão ' + topic.revision].filter(Boolean).join(' · ') : undefined,
         guidance: detail ? guidance : undefined, outcome: detail || undefined,
       }))
     } finally {
@@ -59,7 +61,7 @@ export function ServiceDemo() {
       { title: 'E-mail recebido', detail: `Chamado ${protocol} aberto na simulação.` },
       { title: 'Triagem automática', detail: canAnswer
         ? 'Categoria sugerida: Acesso ao portal. Prioridade: normal. Há uma orientação cadastrada para este cenário.'
-        : 'Sem orientação cadastrada para este cenário. Encaminhamento sugerido: Suporte ao cliente.' },
+        : 'Sem orientação cadastrada para este cenário. Encaminhamento sugerido: ' + portalQueue + '.' },
       ...(canAnswer ? [{ title: 'Orientação enviada', detail: 'A resposta usa a base do protótipo e aguarda a confirmação do cliente.' }] : []))
   }
 
@@ -69,7 +71,7 @@ export function ServiceDemo() {
     void generateSummary(detail)
     advance('queue',
       { title: 'Cliente respondeu ao mesmo protocolo', detail },
-      { title: 'Encaminhado para Suporte ao cliente', detail: 'A categoria e a fila foram sugeridas. O analista recebe o relato e o resultado da orientação.' })
+      { title: 'Encaminhado para ' + portalQueue, detail: 'A categoria e a fila foram sugeridas. O analista recebe o relato e o resultado da orientação.' })
   }
 
   function reset() {
@@ -114,7 +116,7 @@ export function ServiceDemo() {
             <h2 id="demo-action-title">Simulação da visão do analista</h2>
             <dl className="demo-handoff">
               <dt>Categoria sugerida</dt><dd>Acesso ao portal</dd>
-              <dt>Fila sugerida</dt><dd>Suporte ao cliente</dd>
+              <dt>Fila sugerida</dt><dd>{portalQueue}</dd>
               <dt>Relato original</dt><dd>{emailReport}</dd>
               <dt>Orientação enviada</dt><dd>{followUp ? guidance.join(' ') : 'Nenhuma orientação disponível para este cenário.'}</dd>
               {followUp && topic && <><dt>Artigo usado</dt><dd><KnowledgeSource profile="cliente" article={knowledgeReference(topic)} /></dd></>}

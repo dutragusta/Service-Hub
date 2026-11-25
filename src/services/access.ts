@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
-export const settingsPath = '/colaborador/configuracoes'
-export const queuePath = '/colaborador/fila-suporte'
+export const settingsPath = '/equipe/configuracoes'
+export const queuePath = '/equipe/fila'
 
 export type TeamRole = 'admin' | 'support'
 export type TeamIdentity = { role: TeamRole | null, email?: string, demo?: boolean }

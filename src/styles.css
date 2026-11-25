@@ -662,3 +662,5 @@ progress { width: min(100%, 20rem); accent-color: var(--action); height: .75rem;
 
 .knowledge-metadata { display: grid; grid-template-columns: max-content 1fr; gap: .4rem .9rem; }
 .knowledge-metadata dd { margin: 0; }
+
+.team-footer { display: flex; justify-content: space-between; gap: .75rem; flex-wrap: wrap; }

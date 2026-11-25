@@ -1,6 +1,6 @@
 # Service Hub
 
-Protótipo navegável para autoatendimento de colaboradores e clientes. Os portais têm catálogos, conversas e chamados de demonstração próprios.
+Protótipo de autoatendimento para clientes com base de conhecimento, abertura e acompanhamento de chamados e uma fila interna de analistas.
 
 ## Executar localmente
 
@@ -24,16 +24,11 @@ A pasta `dist/` contém o resultado estático. A navegação por hash permite ab
 
 A [demonstração pública](https://dutragusta.github.io/Service-Hub/) é publicada a partir da raiz de `main`. Use `npm ci` e `npm run build:pages` para atualizar o `index.html` e os arquivos compilados em `pages/assets/`. Envie essas alterações com as mudanças do código-fonte.
 
-Para navegar pelos portais no Pages, escolha um perfil e selecione **Explorar demonstração**. Verificação de e-mail, cadastro, administração e fila autorizada dependem do ambiente com autenticação e worker.
+O Pages abre diretamente no **Portal do cliente**. Verificação de e-mail, cadastro, administração e fila autorizada dependem do ambiente com autenticação e worker.
 
 ## Roteiro para o Hackathon
 
-1. Escolha **Sou colaborador** e abra **Acesso à VPN**.
-2. Responda à pergunta do assistente, siga as orientações e selecione **Continuo com o problema**.
-3. Abra o **Diagnóstico guiado**, conclua as etapas e escolha **Ainda preciso de suporte**.
-4. Abra um chamado, descreva o teste com dados fictícios e registre. Consulte número, status e histórico. Recarregue a página para demonstrar a persistência.
-5. Volte ao início e repita com **Login e senha** ou **Microsoft Teams**. Marque o problema como resolvido para demonstrar o outro desfecho.
-6. Troque para **Sou cliente**. Mostre **Acesso ao portal**, **Documentação** e **Suporte a serviços**, além da busca e dos chamados próprios do portal.
+O [roteiro de apresentação](APRESENTACAO.md) acompanha um cliente que continua sem acesso ao portal após recuperar a conta e mostra o atendimento do mesmo chamado na fila interna.
 
 ## Funcionalidades
 
@@ -53,7 +48,7 @@ A interface usa tons de vermelho e neutros quentes, ícones Lucide e a fonte Man
 
 ## Limitações e integrações pendentes
 
-O assistente é baseado em regras e possui um catálogo limitado. O contexto da conversa vive na memória da sessão e é reiniciado ao recarregar. Os chamados são mantidos no navegador e usam registros de demonstração. O encaminhamento prepara o registro local com uma categoria sugerida. Atendimento humano, Service Desk, autenticação corporativa, autorização no servidor, base oficial de conhecimento e um modelo de IA conectado são integrações futuras. Os dois portais são separados na interface e no armazenamento de demonstração. Essa separação não constitui controle de acesso de produção. Use apenas dados fictícios.
+O assistente é baseado em regras e possui um catálogo limitado. O contexto da conversa vive na memória da sessão e é reiniciado ao recarregar. Os chamados são mantidos no navegador e usam registros de demonstração. O encaminhamento prepara o registro local com uma categoria sugerida. Atendimento humano, Service Desk, autenticação corporativa, autorização no servidor, base oficial de conhecimento e um modelo de IA conectado são integrações futuras. O portal de demonstração e a área da equipe têm rotas próprias. Chamados ficam no navegador e exigem autorização no servidor antes de qualquer uso em produção. Use apenas dados fictícios.
 
 ## Referências
 
@@ -64,35 +59,30 @@ O assistente é baseado em regras e possui um catálogo limitado. O contexto da 
 
 ## Alimentar o assistente do protótipo
 
-Edite `src/data/base-atendimento.json` e gere novamente a aplicação com `npm run build`. Cada assunto tem um identificador único no perfil, título, descrição, palavras-chave, pergunta de triagem e listas de orientações (`steps` e `alternate`). Use termos reais que as pessoas digitem, mantendo conteúdo exclusivo de colaboradores na seção `colaborador`. Em `cliente`, cadastre apenas orientações liberadas para clientes.
+Edite `src/data/base-atendimento.json` e gere novamente a aplicação com `npm run build`. Cada assunto tem um identificador único no perfil, título, descrição, palavras-chave, pergunta de triagem e listas de orientações (`steps` e `alternate`). Em `cliente`, use termos que as pessoas digitariam e cadastre orientações liberadas para clientes.
 
-A mesma base alimenta a busca, os artigos e o diagnóstico. As orientações vinculam o artigo da base de demonstração. Ao abrir um chamado com contexto, a referência, o relato e as orientações apresentadas seguem com o resultado dos testes informado pelo usuário. O título do artigo é preservado com o chamado. O assistente identifica assuntos por termos, interpreta respostas comuns e encaminha casos fora da base. Ele funciona localmente, sem modelo generativo ou serviço externo. Use exclusivamente dados fictícios: a separação dos perfis é simulada, e as bases são incluídas no código entregue ao navegador.
+A mesma base alimenta a busca, os artigos e o diagnóstico. As orientações vinculam o artigo da base de demonstração. Ao abrir um chamado com contexto, a referência, o relato e as orientações apresentadas seguem com o resultado dos testes informado pelo usuário. O título do artigo é preservado com o chamado. O assistente identifica assuntos por termos, interpreta respostas comuns e encaminha casos fora da base. Ele funciona localmente, sem modelo generativo ou serviço externo. O catálogo é fictício. O pacote offline inclui os artigos e usa dados salvos no navegador.
 
 ## Área da equipe
 
-Entre como colaborador. A **Fila de suporte** aparece para as contas autorizadas de suporte e administração. Nessa área, assuma, responda ou resolva chamados dos dois portais. Use **Ver como solicitante** para conferir a atualização e a solução na linha do tempo.
+Use **Acesso da equipe**, no rodapé, para chegar à área interna. Na **Fila de suporte**, a equipe pode assumir, responder ou resolver chamados de clientes. Use **Ver como solicitante** para conferir a atualização e a solução na linha do tempo.
 
-**Configurações** aparece na engrenagem da barra superior somente para administradores. A seção reúne Usuários (acessos e convites de suporte e administração), Colaboradores, Clientes, Centros de custo e Visão geral.
+**Configurações**, na área interna, reúne Usuários, Clientes e Visão geral para administradores autenticados.
 
 Chamados, rascunhos, artigos editados e indicadores da demonstração usam a persistência local no navegador. A consulta e a gestão de permissões dependem do worker autenticado. A versão estática, por si só, não fornece essa API.
 
 ## Entrada e cadastro
 
-A tela inicial oferece entradas por perfil. Na versão hospedada, o login usa a identidade da sessão do ChatGPT. O colaborador informa apenas o e-mail corporativo. Clientes informam nome, e-mail e empresa no cadastro. O servidor compara o e-mail digitado com o da sessão autenticada. A equipe administradora revisa os pedidos nas abas correspondentes. Novos acessos administrativos e de suporte usam os convites de Usuários. Os cadastros não alteram o compartilhamento do site privado.
+A tela inicial abre o portal de demonstração. Na versão hospedada, o cadastro do cliente usa a sessão autenticada para verificar o e-mail. A equipe administradora revisa os pedidos e concede acessos de equipe por convites. Os cadastros não alteram o compartilhamento do site privado.
 
 Os portais de demonstração continuam disponíveis pelos links de demonstração e usam dados fictícios neste navegador. Em produção, fluxos corporativos e dados reais precisarão de vinculação às contas autorizadas.
 
 A revisão de prontidão e as limitações para submissão constam em [VERIFICACOES.md](VERIFICACOES.md).
 
 
-## Encaminhamento por centro de custo
+## Encaminhamento ao suporte
 
-Na demonstração de colaborador, abra dois chamados de **Login e senha**, selecionando **DEMO-100 · Serviços Gerais** e **DEMO-200 · Operações**. Cada protocolo mostra a fila escolhida pelo par centro e assunto. Abra um chamado sem centro ou com um assunto sem regra para ver a **Triagem geral**.
-
-Administradores podem editar centros e regras em **Configurações → Centros de custo** e usar **Simular responsável (demo)** na fila. A tela de suporte filtra os encaminhamentos pelo e-mail autenticado e mostra a triagem à equipe. O centro interno não é pedido ao cliente. Alterações na configuração valem para chamados novos. As regras e chamados permanecem neste navegador, com dados fictícios. A autorização por chamado em um banco compartilhado e a integração com sistema de chamados são etapas de homologação.
-
-A edição Service Hub usa armazenamento local separado para iniciar a demonstração com exemplos fictícios. Registros de versões anteriores do navegador ficam fora desta edição. O ambiente hospedado usa a conta autenticada apenas para controle de acesso e cadastro.
-A edição usa tabelas próprias de contas e convites. Cadastros anteriores ficam arquivados no banco e fora do painel da demonstração.
+O chamado de cliente segue para a fila correspondente à categoria. Assuntos que exigem análise fora do catálogo seguem para triagem geral.
 
 ## Hospedar o worker
 
@@ -102,7 +92,7 @@ O identificador da hospedagem e o hash do e-mail do administrador inicial são c
 
 ## Casos fictícios e resumo para o suporte
 
-Em **Abrir chamado → Preencher com caso fictício**, escolha um incidente do perfil e revise as condições antes do registro. Há exemplos de VPN, login, Teams, acesso ao portal e uma solicitação que exige atendimento humano. A demonstração por e-mail também mostra o resumo no encaminhamento ao analista.
+Em **Abrir chamado → Preencher com caso fictício**, escolha um incidente do perfil e revise as condições antes do registro. Há exemplos de falha de acesso ao portal e de uma solicitação formal que exige atendimento humano. A demonstração por e-mail também mostra o resumo no encaminhamento ao analista.
 
 O worker gera o resumo em `POST /api/tickets/summary`. Sem configuração de IA, a síntese usa regras no servidor. Para habilitar a redação por modelo, configure `OPENAI_API_KEY` como segredo e `OPENAI_SUMMARY_MODEL` com um modelo da API Responses que suporte respostas estruturadas. Use apenas dados fictícios. A versão estática preserva o fluxo com regras locais.
 

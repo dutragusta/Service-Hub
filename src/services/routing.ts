@@ -45,6 +45,16 @@ export function routeInternalTicket(code: string, topic: string): TicketRouting 
   }
 }
 
+export function routeCustomerTicket(topic: string): TicketRouting {
+  const queues: Record<string, string> = {
+    portal: 'Acesso ao portal',
+    documentos: 'Documentação de serviços',
+    servicos: 'Suporte a serviços',
+    conectividade: 'Conectividade',
+  }
+  return { queue: queues[topic] ?? triageQueue, responsible: [] }
+}
+
 export function canHandleTicket(ticket: Ticket, role: TeamRole, email?: string) {
   const responsible = ticket.routing?.responsible ?? []
   return role === 'admin' || responsible.length === 0 || (!!email && responsible.includes(email.trim().toLowerCase()))

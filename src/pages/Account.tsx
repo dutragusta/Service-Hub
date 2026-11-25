@@ -11,7 +11,7 @@ export function MyProfile({ profile, role }: { profile: Profile; role?: TeamRole
     <Heading title="Meu perfil" description="Consulte o portal e o perfil de acesso em uso." />
     <section className="card narrow" aria-label="Perfil em uso">
       <dl><dt>Portal</dt><dd>{profiles[profile].portal}</dd><dt>Perfil</dt><dd>{access}</dd></dl>
-      <Link className="button secondary" to="/">Trocar perfil</Link>
+      <Link className="button secondary" to="/cliente">Voltar ao portal</Link>
     </section>
   </>
 }

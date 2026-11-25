@@ -69,7 +69,7 @@ async function portalAccountApi(request, db, path, identity) {
   if (method !== 'GET' && method !== 'POST') return json({ error: 'Método indisponível.' }, 405)
   const body = method === 'POST' ? await request.json().catch(() => null) : null
   const profile = method === 'GET' ? new URL(request.url).searchParams.get('profile') : body?.profile
-  if (profile !== 'colaborador' && profile !== 'cliente') return json({ error: 'Selecione um perfil válido.' }, 400)
+  if (profile !== 'cliente') return json({ error: 'Selecione um perfil válido.' }, 400)
 
   if (managing) {
     if (method === 'GET') {
@@ -85,22 +85,15 @@ async function portalAccountApi(request, db, path, identity) {
   }
 
   const lookup = () => db.prepare('SELECT name, company, status FROM demo_portal_accounts WHERE subject = ? AND profile = ?').bind(identity.subject, profile).first()
-  const access = (account) => ({ account, canEnter: account?.status === 'approved' || (profile === 'colaborador' && !!identity.role) })
+  const access = (account) => ({ account, canEnter: account?.status === 'approved' })
   if (method === 'GET') return json(access(await lookup()))
 
   const email = typeof body?.email === 'string' ? body.email.trim().toLowerCase() : ''
   if (email.length > 254 || !emailPattern.test(email)) return json({ error: 'Informe um e-mail válido.' }, 400)
   if (email !== identity.email) return json({ error: 'Use o mesmo e-mail da sua conta autenticada.' }, 403)
   const account = await lookup()
-  if (body.action === 'verify') {
-    if (profile === 'colaborador' && !account && !identity.role) {
-      await db.prepare("INSERT INTO demo_portal_accounts (subject, profile, name, email, company, status, updated_at) VALUES (?, ?, ?, ?, '', 'pending', ?) ON CONFLICT(subject, profile) DO NOTHING")
-        .bind(identity.subject, profile, identity.email, identity.email, Date.now()).run()
-      return json(access(await lookup()))
-    }
-    return json(access(account))
-  }
-  if (body.action !== 'register' || profile !== 'cliente') return json({ error: 'Ação indisponível para este perfil.' }, 400)
+  if (body.action === 'verify') return json(access(account))
+  if (body.action !== 'register') return json({ error: 'Ação indisponível para este perfil.' }, 400)
 
   const name = typeof body.name === 'string' ? body.name.trim() : ''
   const company = typeof body.company === 'string' ? body.company.trim() : ''
@@ -118,7 +111,7 @@ export default {
     if (path === '/api/knowledge') {
       const profile = new URL(request.url).searchParams.get('profile')
       if (request.method !== 'GET') return json({ error: 'Método indisponível.' }, 405)
-      if (profile !== 'colaborador' && profile !== 'cliente') return json({ error: 'Perfil indisponível.' }, 400)
+      if (profile !== 'cliente') return json({ error: 'Perfil indisponível.' }, 400)
       return json({ profile, articles: knowledgeBase[profile] })
     }
     if (path.startsWith('/api/')) {

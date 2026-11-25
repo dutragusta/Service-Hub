@@ -13,7 +13,7 @@ O projeto foi preparado para demonstrar autoatendimento com chamados, pessoas e 
 
 ## Roteiro de apresentação
 
-1. Em **Abrir chamado**, selecione **VPN expira antes de concluir a conexão** e registre. Mostre o horário, as duas redes, o impacto e os resultados no resumo.
+1. Em **Abrir chamado**, selecione **Portal recusa acesso após recuperação** e registre. Mostre os horários, as tentativas, o impacto e os resultados no resumo.
 2. Repita com uma descrição curta e deixe vazios os campos do incidente. Aponte **Informações a confirmar**, sem diagnóstico inventado.
 3. Em uma nova solicitação fictícia, digite `Token: exemplo-ficticio` na descrição. O formulário deve pedir a remoção do texto. O teste da API também confirma que esse conteúdo é rejeitado no servidor.
 4. Execute `node scripts/check-ticket-summary.mjs`. O teste verifica requisições sem sessão, de origem externa, com formato incorreto, com conteúdo sensível ou acima do limite. O provedor de IA é simulado nesse teste.
@@ -26,4 +26,4 @@ Antes de um piloto com dados reais, implemente autorização por chamado e por o
 
 ## Execução de apresentação no computador
 
-O servidor de demonstração escuta apenas em `127.0.0.1`, valida o host e a origem, descarta cabeçalhos de identidade fornecidos pelo navegador e fornece uma identidade fictícia limitada à fila local. Rotas de gestão autenticada ficam indisponíveis nesse modo. A API de conhecimento retorna apenas as orientações fictícias do perfil solicitado e a execução local do resumo não configura provedor externo. Use apenas dados de demonstração.
+O servidor de demonstração escuta apenas em `127.0.0.1`, valida o host e a origem, descarta cabeçalhos de identidade fornecidos pelo navegador e fornece uma identidade fictícia limitada à fila local. Rotas de gestão autenticada ficam indisponíveis nesse modo. A API de conhecimento retorna apenas as orientações fictícias do portal do cliente e a execução local do resumo não configura provedor externo. Use apenas dados de demonstração.

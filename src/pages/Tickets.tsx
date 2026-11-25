@@ -4,7 +4,7 @@ import { useRef, useState, type FormEvent } from 'react'
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { Empty, Heading, KnowledgeSource, StatusLabel } from '../components/ui'
 import { formatDate, formatDateTime, looksSensitive, readTickets, saveTicket } from '../services/support'
-import { readCostCenters, routeInternalTicket } from '../services/routing'
+import { readCostCenters, routeCustomerTicket, routeInternalTicket } from '../services/routing'
 import { SummaryDetails } from '../components/TicketSummary'
 import { demoIncidents } from '../data/demo-incidents'
 import { summarizeTicket } from '../services/summarization'
@@ -89,7 +89,7 @@ export function NewTicket({ profile }: { profile: Profile }) {
     const title = String(fields.get('title') ?? '').trim()
     const description = String(fields.get('description') ?? '').trim()
     const selectedTopic = form.querySelector<HTMLSelectElement>('select[name=category]')?.selectedOptions[0]?.dataset.topic ?? 'other'
-    const routing = profile === 'colaborador' ? routeInternalTicket(String(fields.get('costCenter') ?? ''), selectedTopic) : undefined
+    const routing = profile === 'colaborador' ? routeInternalTicket(String(fields.get('costCenter') ?? ''), selectedTopic) : routeCustomerTicket(selectedTopic)
     const validation: Record<string, string> = {}
     if (!category) validation.category = 'Selecione uma categoria.'
     if (title.length < 5) validation.title = 'Insira um título com pelo menos 5 caracteres.'
@@ -108,7 +108,7 @@ export function NewTicket({ profile }: { profile: Profile }) {
     const input = cleanSummaryInput({
       ...details, profile, category, title, description, priority,
       channel: 'Portal ' + (profile === 'cliente' ? 'do cliente' : 'do colaborador'),
-      queue: routing?.queue ?? (profile === 'cliente' ? 'Triagem geral' : undefined),
+      queue: routing.queue,
       center: routing?.centerName,
       report: savedContext?.report, assessment: savedContext?.assessment,
       article: savedContext?.article ? [savedContext.article.code, savedContext.article.title, savedContext.article.revision && 'Revisão ' + savedContext.article.revision].filter(Boolean).join(' · ') : undefined, guidance: savedContext?.guidance, outcome: savedContext?.outcome,
@@ -232,7 +232,8 @@ export function TicketDetail({ profile, id, created }: { profile: Profile, id?: 
     <div className="detail-grid">
       <section className="card"><h2>Descrição do chamado</h2><p className="preserve">{ticket.description}</p>
         <dl><dt>Prioridade</dt><dd>{ticket.priority}</dd>
-          {ticket.routing && <><dt>Centro de custo</dt><dd>{ticket.routing.centerName ? ticket.routing.centerCode + ' · ' + ticket.routing.centerName : 'Sem centro informado'}</dd>
+          {ticket.routing && <>
+            {profile === 'colaborador' && <><dt>Centro de custo</dt><dd>{ticket.routing.centerName ? ticket.routing.centerCode + ' · ' + ticket.routing.centerName : 'Sem centro informado'}</dd></>}
             <dt>Fila de atendimento</dt><dd>{ticket.routing.queue}</dd></>}
         </dl>
         {ticket.summary && <SummaryDetails summary={ticket.summary} />}
