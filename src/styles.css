@@ -676,3 +676,8 @@ progress { width: min(100%, 20rem); accent-color: var(--action); height: .75rem;
 .desk-metrics dd { font-size: clamp(1.2rem, 2.4vw, 1.9rem); }
 @media (max-width: 850px) { .desk-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 420px) { .desk-metrics { grid-template-columns: minmax(0, 1fr); } }
+
+.entry-client-card { align-items: start; }
+.entry-client-card .icon-box { grid-row: auto; }
+.entry-client-content h3 { margin: 0 0 .35rem; }
+.entry-client-content .actions { flex-wrap: wrap; }

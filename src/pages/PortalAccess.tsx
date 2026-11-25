@@ -63,7 +63,7 @@ function PortalAccessForm({ registration }: { registration: boolean }) {
       if (check === 'demo') {
         enterDemoCustomer(details.email, registration ? organization : undefined)
         if (registration) setFeedback('Cadastro fictício concluído. Use Entrar com o mesmo e-mail.')
-        else navigate('/cliente/perfil')
+        else navigate('/cliente', { replace: true })
         return
       }
       const result = await accessRequest<Access>('/api/portal/account', registration ? { ...details, ...organization } : details)
@@ -80,7 +80,7 @@ function PortalAccessForm({ registration }: { registration: boolean }) {
 
   const account = access?.account
   return <main id="main" className="workspace account-workspace">
-    <Link className="back" to="/cliente">Voltar ao portal do cliente</Link>
+    <Link className="back" to="/">Voltar à tela inicial</Link>
     <div className="account-brand"><Brand /></div>
     <Heading title={registration ? 'Cadastro · Cliente' : 'Entrar · Cliente'}
       description={registration ? 'Informe os dados da sua empresa para solicitar acesso.' : 'Informe o e-mail da sua conta para verificar o acesso.'} />
@@ -161,7 +161,7 @@ export function StaffAccess() {
   const role = identity?.role
   const signIn = '/signin-with-chatgpt?return_to=' + encodeURIComponent('/#/acesso/equipe')
   return <main id="main" className="workspace account-workspace">
-    <Link className="back" to="/cliente">Voltar ao portal do cliente</Link>
+    <Link className="back" to="/">Voltar à tela inicial</Link>
     <div className="account-brand"><Brand /></div>
     <Heading title="Acesso da equipe" description="Entrada para administradores e equipe de suporte." />
     <section className="card team-editor" aria-label="Acesso da equipe">

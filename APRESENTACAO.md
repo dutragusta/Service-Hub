@@ -10,11 +10,11 @@ Use o mesmo navegador e o mesmo endereço durante toda a demonstração. Os cham
 
 ## Roteiro principal
 
-1. Abra o endereço local. O Service Hub abre direto no **Portal do cliente**. Entre no **Assistente**.
+1. Abra o endereço local. Na tela inicial, selecione **Cadastrar**, crie uma conta fictícia e use **Entrar** com o mesmo e-mail. No portal, abra o **Assistente**.
 2. Em **Testar um caso fictício**, selecione **Portal recusa acesso após recuperação**. O assistente identifica o assunto no catálogo da API local e pergunta se a página de entrada abre.
 3. Responda **Sim**. Abra a referência **KB-CLI-201 · Rev. 1.4** para mostrar o procedimento e o ponto de escalonamento. Volte ao assistente.
 4. Clique em **Continuo com o problema → Revisar e abrir chamado → Preencher evidências fictícias**. Confira o início às 10h20, a nova tentativa às 10h45 e a necessidade de consultar uma solicitação antes das 12h. Registre e anote o protocolo.
-5. No rodapé, selecione **Acesso da equipe → Abrir central de atendimento · simulação local → Fila de suporte**. Abra o protocolo e confira o resumo, a referência e a fila **Acesso ao portal**.
+5. No rodapé do portal, selecione **Acesso da equipe → Abrir central de atendimento · simulação local → Fila de suporte**. Abra o protocolo e confira o resumo, a referência e a fila **Acesso ao portal**.
 6. Clique em **Assumir chamado**. Você pode escolher uma resposta rápida e editá-la antes de publicar ou registrar uma nota interna. Registre uma solução fictícia, como “A equipe regularizou a associação da conta de demonstração. O cliente confirmou o acesso”. Clique em **Registrar solução e resolver** e abra **Ver como solicitante** para mostrar a atualização no mesmo protocolo.
 
 ## Caminhos adicionais
@@ -33,7 +33,7 @@ A integração com modelo externo é opcional no servidor da hospedagem. A ediç
 
 ## Conta de demonstração
 
-Use **Cadastrar** e **Entrar** no cabeçalho. No pacote offline e no GitHub Pages, o cadastro usa dados fictícios e um e-mail `@example.test`. Após cadastrar, use o mesmo e-mail para entrar e ver **Meu perfil**. O cadastro é local ao navegador, sem envio de e-mail ou senha, e serve apenas para apresentar a jornada da conta.
+Use **Cadastrar** e **Entrar** na tela inicial. No pacote offline e no GitHub Pages, o cadastro usa dados fictícios e um e-mail `@example.test`. Após cadastrar, use o mesmo e-mail para entrar no portal. O menu do perfil exibe os dados fictícios. O cadastro é local ao navegador, sem envio de e-mail ou senha, e serve apenas para apresentar a jornada da conta.
 
 ## Painel e continuidade do atendimento
 

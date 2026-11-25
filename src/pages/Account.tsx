@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { currentDemoCustomer, leaveDemoCustomer } from '../services/demo-account'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Empty, Heading } from '../components/ui'
 import { profiles } from '../demo'
 import type { TeamRole } from '../services/access'
@@ -9,6 +9,7 @@ import type { Profile, TicketEvent } from '../types'
 
 export function MyProfile({ profile, role }: { profile: Profile; role?: TeamRole | null }) {
   const [demoCustomer, setDemoCustomer] = useState(currentDemoCustomer)
+  const navigate = useNavigate()
   const access = role === 'admin' ? 'Administrador' : role === 'support' ? 'Suporte' : profiles[profile].title
   return <>
     <Heading title="Meu perfil" description="Consulte o portal e o perfil de acesso em uso." />
@@ -18,7 +19,7 @@ export function MyProfile({ profile, role }: { profile: Profile; role?: TeamRole
       </>}</dl>
       <div className="actions">
         <Link className="button secondary" to="/cliente">Voltar ao portal</Link>
-        {demoCustomer && <button type="button" className="button secondary" onClick={() => { leaveDemoCustomer(); setDemoCustomer(undefined) }}>Sair da conta de demonstração</button>}
+        {demoCustomer && <button type="button" className="button secondary" onClick={() => { leaveDemoCustomer(); setDemoCustomer(undefined); navigate('/', { replace: true }) }}>Sair da conta de demonstração</button>}
       </div>
     </section>
   </>

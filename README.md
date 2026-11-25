@@ -24,7 +24,7 @@ A pasta `dist/` contém o resultado estático. A navegação por hash permite ab
 
 A [demonstração pública](https://dutragusta.github.io/Service-Hub/) é publicada a partir da raiz de `main`. Use `npm ci` e `npm run build:pages` para atualizar o `index.html` e os arquivos compilados em `pages/assets/`. Envie essas alterações com as mudanças do código-fonte.
 
-O Pages abre diretamente no **Portal do cliente**. Verificação de e-mail, cadastro, administração e fila autorizada dependem do ambiente com autenticação e worker.
+O Pages abre na tela de acesso do **Portal do Cliente**, com as opções **Entrar** e **Cadastrar**. Verificação de e-mail, cadastro, administração e fila autorizada dependem do ambiente com autenticação e worker.
 
 ## Roteiro para o Hackathon
 
@@ -73,7 +73,7 @@ Chamados, rascunhos, artigos editados e indicadores da demonstração usam a per
 
 ## Entrada e cadastro
 
-A tela inicial abre o portal de demonstração. Na versão hospedada, o cadastro do cliente usa a sessão autenticada para verificar o e-mail. A equipe administradora revisa os pedidos e concede acessos de equipe por convites. Os cadastros não alteram o compartilhamento do site privado.
+A tela inicial apresenta a opção **Sou cliente**, com entrada e cadastro. Na versão hospedada, o cadastro do cliente usa a sessão autenticada para verificar o e-mail. A equipe administradora revisa os pedidos e concede acessos de equipe por convites. Os cadastros não alteram o compartilhamento do site privado.
 
 Os portais de demonstração continuam disponíveis pelos links de demonstração e usam dados fictícios neste navegador. Em produção, fluxos corporativos e dados reais precisarão de vinculação às contas autorizadas.
 
