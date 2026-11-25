@@ -1,0 +1,164 @@
+{
+  "colaborador": [
+    {
+      "id": "vpn",
+      "title": "Acesso à VPN",
+      "description": "Conexão remota indisponível ou instável.",
+      "keywords": [
+        "vpn",
+        "conexão remota",
+        "acesso remoto",
+        "virtual private network",
+        "acesso à rede de casa"
+      ],
+      "question": "Você consegue acessar um site público no mesmo dispositivo?",
+      "steps": [
+        "Feche e reabra o aplicativo de VPN aprovado pela empresa.",
+        "Tente conectar novamente. Se houver erro, anote a mensagem exibida sem incluir dados da conta."
+      ],
+      "alternate": [
+        "Reconecte o dispositivo à rede e confirme que consegue abrir um site público.",
+        "Quando a conexão voltar, tente acessar a VPN pelo aplicativo aprovado pela empresa."
+      ]
+    },
+    {
+      "id": "login",
+      "title": "Login e senha",
+      "description": "Dificuldades de acesso à conta corporativa.",
+      "keywords": [
+        "senha",
+        "login",
+        "conta",
+        "bloqueado",
+        "entrar",
+        "esqueci a senha",
+        "senha expirada",
+        "conta bloqueada",
+        "credenciais"
+      ],
+      "question": "Você consegue abrir a página oficial de recuperação de conta?",
+      "steps": [
+        "Na página oficial, selecione a opção de recuperação da sua conta.",
+        "Siga a verificação na própria página e teste o acesso novamente."
+      ],
+      "alternate": [
+        "Abra a página de acesso pelo endereço fornecido pela TI.",
+        "Se a opção de recuperação continuar indisponível, registre a mensagem de erro para o suporte."
+      ]
+    },
+    {
+      "id": "teams",
+      "title": "Microsoft Teams",
+      "description": "Falhas em reuniões, áudio ou mensagens.",
+      "keywords": [
+        "teams",
+        "microfone",
+        "reunião",
+        "áudio",
+        "câmera",
+        "teams nao ouve",
+        "chamada",
+        "microfone mudo",
+        "sem som"
+      ],
+      "question": "O Teams funciona no navegador autorizado pela empresa?",
+      "steps": [
+        "Feche o Teams por completo e reabra o aplicativo.",
+        "Se o problema estiver em uma chamada, confira o microfone e o alto-falante nas configurações do Teams. Faça uma chamada de teste, se disponível."
+      ],
+      "alternate": [
+        "Confirme que o dispositivo está conectado à internet e tente abrir o Teams novamente.",
+        "Se a falha ocorrer nas duas versões, anote se ela afeta a entrada no Teams, as reuniões ou as mensagens."
+      ]
+    }
+  ],
+  "cliente": [
+    {
+      "id": "portal",
+      "title": "Acesso ao portal",
+      "description": "Orientações para acessar o canal do cliente.",
+      "keywords": [
+        "portal",
+        "login",
+        "senha",
+        "acesso"
+      ],
+      "question": "A página de login abre pelo endereço que foi informado à sua empresa?",
+      "steps": [
+        "Confira se você está usando a conta autorizada pela sua organização.",
+        "Caso exista uma opção de recuperação, siga o procedimento na própria página do portal."
+      ],
+      "alternate": [
+        "Confirme o endereço do canal com o responsável pelo contrato na sua empresa.",
+        "Se a página continuar indisponível, anote a hora aproximada e a mensagem exibida."
+      ]
+    },
+    {
+      "id": "documentos",
+      "title": "Documentação",
+      "description": "Localize a documentação dos serviços contratados.",
+      "keywords": [
+        "documentação",
+        "documento",
+        "manual",
+        "guia"
+      ],
+      "question": "Você consegue acessar a área de documentação do serviço?",
+      "steps": [
+        "Na área de documentação autorizada, procure pelo nome do serviço contratado.",
+        "Se houver mais de uma versão, confirme qual se aplica ao contrato da sua empresa."
+      ],
+      "alternate": [
+        "Confirme com o responsável pelo contrato se sua conta tem acesso à documentação.",
+        "Se precisar solicitar o material, informe somente o nome público do serviço e do documento."
+      ]
+    },
+    {
+      "id": "servicos",
+      "title": "Suporte a serviços",
+      "description": "Registre uma dúvida ou falha em um serviço.",
+      "keywords": [
+        "serviço",
+        "atendimento",
+        "suporte",
+        "falha",
+        "indisponível",
+        "conectividade",
+        "instabilidade",
+        "fora do ar",
+        "serviços contratados"
+      ],
+      "question": "Outros usuários autorizados observam a mesma falha?",
+      "steps": [
+        "Registre o horário aproximado e quais atividades foram interrompidas.",
+        "Abra uma solicitação com o nome público do serviço e o impacto observado."
+      ],
+      "alternate": [
+        "Verifique se a falha continua depois de recarregar a interface do serviço.",
+        "Se persistir, registre a ação que apresentou erro e o horário aproximado."
+      ]
+    },
+    {
+      "id": "conectividade",
+      "title": "Conectividade e VPN",
+      "description": "Triagem de falhas de acesso a um serviço contratado.",
+      "keywords": [
+        "vpn",
+        "túnel",
+        "acesso remoto",
+        "timeout",
+        "tempo limite",
+        "nao conecta"
+      ],
+      "question": "O problema afeta outras pessoas da sua empresa?",
+      "steps": [
+        "Confirme com a equipe responsável qual serviço está afetado e se houve alguma alteração recente.",
+        "Registre o horário de início e o impacto observado para a equipe de suporte."
+      ],
+      "alternate": [
+        "Verifique se outros serviços autorizados abrem no mesmo dispositivo.",
+        "Se a falha persistir, anote a mensagem exibida e o horário aproximado para registrar um chamado."
+      ]
+    }
+  ]
+}

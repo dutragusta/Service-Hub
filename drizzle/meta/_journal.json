@@ -1,0 +1,1 @@
+{"version":"7","dialect":"sqlite","entries":[{"idx":0,"version":"6","when":1795448400000,"tag":"0000_permissions","breakpoints":true},{"idx":1,"version":"6","when":1795532400000,"tag":"0001_portal_accounts","breakpoints":true},{"idx":2,"version":"6","when":1795536000000,"tag":"0002_isolate_demo_accounts","breakpoints":true}]}
