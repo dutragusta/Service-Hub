@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { Brand, Heading } from '../components/ui'
-import { accessRequest, queuePath, settingsPath, useTeamIdentity } from '../services/access'
+import { accessRequest, deskPath, useTeamIdentity } from '../services/access'
 import { enterDemoCustomer } from '../services/demo-account'
 import type { Profile } from '../types'
 
@@ -166,7 +166,7 @@ export function StaffAccess() {
     <Heading title="Acesso da equipe" description="Entrada para administradores e equipe de suporte." />
     <section className="card team-editor" aria-label="Acesso da equipe">
       {role === undefined ? <p role="status">Verificando acesso…</p> : role ? (
-        <div><Link className="button primary" to={role === 'admin' ? settingsPath : queuePath}>{identity?.demo ? 'Abrir fila do analista · simulação local' : role === 'admin' ? 'Abrir administração' : 'Abrir fila de suporte'}</Link></div>
+        <div><Link className="button primary" to={deskPath}>{identity?.demo ? 'Abrir central de atendimento · simulação local' : 'Abrir central de atendimento'}</Link></div>
       ) : import.meta.env.MODE === 'pages' ? <p>A fila do analista está disponível no pacote local e no ambiente autenticado.</p> : <>
         <p>Entre com a conta autorizada. Para ativar um novo cadastro de equipe, use o link de convite fornecido pelo administrador.</p>
         <div><a className="button primary" href={signIn} target="_top">Entrar com ChatGPT</a></div>

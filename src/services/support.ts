@@ -59,35 +59,50 @@ export function formatDateTime(date: string) {
   return new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Sao_Paulo' }).format(new Date(date))
 }
 
-type TicketAction =
+export type TicketAction =
   | { kind: 'claim' }
   | { kind: 'reply', text: string }
   | { kind: 'resolve', text: string }
+  | { kind: 'note', text: string }
+  | { kind: 'customer-reply', text: string }
+  | { kind: 'rate', value: number }
 
 const supportAgent = 'Equipe de suporte fictícia'
 
 export function updateTicket(profile: Profile, id: string, action: TicketAction) {
   const tickets = readTickets(profile)
   const current = tickets.find((ticket) => ticket.id === id)
-  if (!current || current.status === 'Resolvido') throw new Error('Este chamado já foi concluído ou está indisponível.')
+  if (!current) throw new Error('Chamado indisponível.')
+  if (current.status === 'Resolvido' && action.kind !== 'rate') throw new Error('Este chamado já foi concluído.')
   const at = new Date().toISOString()
   const events = [...(current.events ?? [])]
   const updated = { ...current, events }
 
-  if (action.kind === 'claim') {
+  if (action.kind === 'rate') {
+    if (current.status !== 'Resolvido' || current.rating !== undefined || !Number.isInteger(action.value) || action.value < 1 || action.value > 5) {
+      throw new Error('O chamado precisa estar resolvido e aceita uma avaliação de 1 a 5.')
+    }
+    updated.rating = action.value
+  } else if (action.kind === 'claim') {
     if (current.status !== 'Aberto') throw new Error('Este chamado já está em atendimento.')
     updated.assignee = supportAgent
     updated.status = 'Em atendimento'
     events.push({ type: 'status', status: updated.status, at })
   } else {
-    if (current.status !== 'Em atendimento') throw new Error('Assuma o chamado antes de responder.')
     const message = action.text.trim()
     if (!message || message.length > 1200 || looksSensitive(message)) throw new Error('Informe um texto válido, sem credenciais, com até 1.200 caracteres.')
-    events.push({ type: 'reply', author: current.assignee ?? supportAgent, text: message, at })
-    if (action.kind === 'resolve') {
-      updated.status = 'Resolvido'
-      updated.resolution = message
-      events.push({ type: 'status', status: updated.status, at })
+    if (action.kind === 'note') {
+      updated.internalNotes = [...(current.internalNotes ?? []), { at, text: message }]
+    } else if (action.kind === 'customer-reply') {
+      events.push({ type: 'reply', sender: 'cliente', author: 'Cliente', text: message, at })
+    } else {
+      if (current.status !== 'Em atendimento') throw new Error('Assuma o chamado antes de responder.')
+      events.push({ type: 'reply', author: current.assignee ?? supportAgent, text: message, at })
+      if (action.kind === 'resolve') {
+        updated.status = 'Resolvido'
+        updated.resolution = message
+        events.push({ type: 'status', status: updated.status, at })
+      }
     }
   }
   localStorage.setItem(prefix + profile, JSON.stringify(tickets.map((ticket) => ticket.id === id ? updated : ticket)))

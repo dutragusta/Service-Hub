@@ -1,9 +1,10 @@
+import { responseSla, slaLabels } from '../services/response-sla'
 import { getTopics, recordSession } from '../services/operations'
 import { CheckCircle2, ClipboardList, Info, MessageSquare, Paperclip, Plus, TicketPlus } from 'lucide-react'
 import { useRef, useState, type FormEvent } from 'react'
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { Empty, Heading, KnowledgeSource, StatusLabel } from '../components/ui'
-import { formatDate, formatDateTime, looksSensitive, readTickets, saveTicket } from '../services/support'
+import { formatDate, formatDateTime, looksSensitive, readTickets, saveTicket, updateTicket, type TicketAction } from '../services/support'
 import { readCostCenters, routeCustomerTicket, routeInternalTicket } from '../services/routing'
 import { SummaryDetails } from '../components/TicketSummary'
 import { demoIncidents } from '../data/demo-incidents'
@@ -207,9 +208,22 @@ export function ContextDetails({ context }: { context: TicketContext }) {
 
 export function TicketDetail({ profile, id, created }: { profile: Profile, id?: string, created: boolean }) {
   const base = '/' + profile
-  const ticket = readTickets(profile).find((entry) => entry.id === id)
+  const [ticket, setTicket] = useState(() => readTickets(profile).find((entry) => entry.id === id))
+  const [message, setMessage] = useState('')
+  const [feedback, setFeedback] = useState<{ text: string, error: boolean }>()
   if (!ticket) return <Empty title="Chamado indisponível"><p>Verifique se o número pertence ao perfil atual.</p><Link to={base + '/chamados'}>Voltar aos chamados</Link></Empty>
   const resolved = ticket.status === 'Resolvido'
+  const sla = responseSla(ticket)
+  function send(action: TicketAction) {
+    if (!id) return
+    try {
+      setTicket(updateTicket(profile, id, action))
+      setMessage('')
+      setFeedback({ text: action.kind === 'rate' ? 'Avaliação registrada.' : 'Atualização adicionada à linha do tempo.', error: false })
+    } catch (error) {
+      setFeedback({ text: error instanceof Error ? error.message : 'Não foi possível salvar.', error: true })
+    }
+  }
   const nextAction = resolved ? 'Atendimento concluído' : ticket.status === 'Aberto'
     ? ticket.routing ? 'Aguarde o atendimento na fila indicada.' : 'Aguarde a triagem da equipe de suporte.'
     : 'A equipe está analisando o caso. Acompanhe as atualizações na linha do tempo.'
@@ -221,7 +235,8 @@ export function TicketDetail({ profile, id, created }: { profile: Profile, id?: 
       <dl>
         <div><dt>Status</dt><dd><StatusLabel status={ticket.status} /></dd></div>
         <div><dt>Responsável</dt><dd>{ticket.assignee ?? 'Aguardando atribuição'}</dd></div>
-        <div><dt>Prazo</dt><dd>{ticket.dueAt ? <time dateTime={ticket.dueAt}>{formatDateTime(ticket.dueAt)}</time> : resolved ? 'Encerrado' : 'A definir na triagem'}</dd></div>
+        {ticket.dueAt && <div><dt>Prazo informado</dt><dd><time dateTime={ticket.dueAt}>{formatDateTime(ticket.dueAt)}</time></dd></div>}
+        <div><dt>Primeira resposta · meta</dt><dd><time dateTime={sla.deadline}>{formatDateTime(sla.deadline)}</time><br />{slaLabels[sla.status]}</dd></div>
       </dl>
       <div className={'ticket-next ' + (resolved ? 'ticket-solution' : '')}>
         {resolved ? <CheckCircle2 size={22} aria-hidden /> : <Info size={22} aria-hidden />}
@@ -238,6 +253,19 @@ export function TicketDetail({ profile, id, created }: { profile: Profile, id?: 
         </dl>
         {ticket.summary && <SummaryDetails summary={ticket.summary} />}
         {ticket.context && <div className="saved-context"><h3>Resumo do diagnóstico</h3><ContextDetails context={ticket.context} /></div>}
+        <div className="saved-context team-editor">
+          {resolved ? <>
+            <h2>Avaliar atendimento</h2>
+            {ticket.rating !== undefined ? <p>Nota registrada: {ticket.rating} de 5.</p> : <div className="actions">
+              {[1, 2, 3, 4, 5].map((value) => <button key={value} type="button" className="button secondary" aria-label={`Avaliar com nota ${value}`} onClick={() => send({ kind: 'rate', value })}>{value}</button>)}
+            </div>}
+          </> : <form className="team-editor" onSubmit={(event) => { event.preventDefault(); send({ kind: 'customer-reply', text: message }) }}>
+            <h2>Complementar chamado</h2>
+            <label>Mensagem para o suporte<textarea value={message} onChange={(event) => setMessage(event.target.value)} rows={3} maxLength={1200} required /></label>
+            <div><button className="button primary" type="submit" disabled={!message.trim()}>Enviar atualização</button></div>
+          </form>}
+          {feedback && <p role={feedback.error ? 'alert' : 'status'} className={feedback.error ? 'alert error' : 'alert success'}>{feedback.text}</p>}
+        </div>
       </section>
       <TicketTimeline ticket={ticket} />
     </div>

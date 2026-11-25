@@ -2,7 +2,7 @@ import { loadKnowledge } from './services/knowledge'
 import { getTopics } from './services/operations'
 import '@fontsource-variable/manrope/wght.css'
 import './styles.css'
-import { Bell, CircleHelp, BookOpen, Headphones, House, ClipboardList, Settings, Ticket } from 'lucide-react'
+import { BarChart3, Bell, CircleHelp, BookOpen, Headphones, House, ClipboardList, Settings, Ticket } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { HashRouter, Link, Navigate, NavLink, Route, Routes, useLocation, useParams } from 'react-router-dom'
@@ -14,9 +14,9 @@ import { profiles } from './demo'
 import { Assistant, Diagnosis, initialConversation, type Conversation } from './pages/Assistant'
 import { Knowledge, Portal } from './pages/Portal'
 import { AcceptInvite } from './pages/Permissions'
-import { queuePath, settingsPath, useTeamIdentity } from './services/access'
+import { deskPath, queuePath, settingsPath, useTeamIdentity } from './services/access'
 import { ServiceDemo } from './pages/ServiceDemo'
-import { TeamQueue, TeamSettings } from './pages/Team'
+import { TeamDashboard, TeamQueue, TeamSettings } from './pages/Team'
 import { NewTicket, TicketDetail, Tickets } from './pages/Tickets'
 import type { Profile } from './types'
 
@@ -75,7 +75,7 @@ function PortalShell({ conversation, update }: { conversation?: Conversation, up
           <Route path="diagnostico/:id" element={<Diagnosis key={route[1]} profile={profile} id={route[1]} />} />
           <Route path="chamados" element={<Tickets profile={profile} />} />
           <Route path="chamados/novo" element={<NewTicket key={location.search} profile={profile} />} />
-          <Route path="chamados/:id" element={<TicketDetail profile={profile} id={route[1]} created={location.state?.created === true} />} />
+          <Route path="chamados/:id" element={<TicketDetail profile={profile} key={route[1]} id={route[1]} created={location.state?.created === true} />} />
           <Route path="conhecimento" element={<Knowledge profile={profile} />} />
           <Route path="conhecimento/:id" element={<Knowledge profile={profile} article={route[1]} />} />
           <Route path="*" element={<Empty title="Página indisponível"><Link to={base}>Voltar ao início</Link></Empty>} />
@@ -101,6 +101,7 @@ function TeamArea() {
       <Link to={queuePath} className="sidebar-brand" aria-label="Fila de suporte"><Brand /></Link>
       <div className="sidebar-profile">Central do analista</div>
       <nav aria-label="Navegação da equipe">
+        <NavLink to={deskPath}><BarChart3 size={19} aria-hidden /> Painel de atendimento</NavLink>
         <NavLink to={queuePath}><ClipboardList size={19} aria-hidden /> Fila de suporte</NavLink>
         {identity?.role === 'admin' && <NavLink to={settingsPath}><Settings size={19} aria-hidden /> Configurações</NavLink>}
       </nav>
@@ -112,9 +113,10 @@ function TeamArea() {
     <div className="shell-content">
       <main id="main" className="workspace page-enter" key={location.pathname}>
         <Routes>
+          <Route path="painel" element={<TeamDashboard identity={identity} />} />
           <Route path="fila/*" element={<TeamQueue identity={identity} />} />
           <Route path="configuracoes/*" element={<TeamSettings role={identity?.role} />} />
-          <Route path="*" element={<Navigate replace to={queuePath} />} />
+          <Route path="*" element={<Navigate replace to={deskPath} />} />
         </Routes>
       </main>
       <footer className="workspace-footer">Service Hub · Área da equipe</footer>

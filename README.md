@@ -65,7 +65,7 @@ A mesma base alimenta a busca, os artigos e o diagnóstico. As orientações vin
 
 ## Área da equipe
 
-Use **Acesso da equipe**, no rodapé, para chegar à área interna. Na **Fila de suporte**, a equipe pode assumir, responder ou resolver chamados de clientes. Use **Ver como solicitante** para conferir a atualização e a solução na linha do tempo.
+Use **Acesso da equipe**, no rodapé, para chegar à área interna. O **Painel de atendimento** mostra chamados ativos, prazos de primeira resposta, resoluções e avaliações. Na **Fila de suporte**, a equipe pode buscar pelo protocolo, filtrar, assumir chamados e usar respostas rápidas editáveis ou notas internas da demonstração. Use **Ver como solicitante** para conferir a atualização e a solução na linha do tempo.
 
 **Configurações**, na área interna, reúne Usuários, Clientes e Visão geral para administradores autenticados.
 
@@ -105,3 +105,5 @@ Para executar a aplicação completa localmente, rode `npm ci`, `npm run build` 
 O ambiente local serve a base fictícia por API, gera o resumo no servidor e permite concluir o atendimento pela fila de analista simulada. O catálogo e as citações exibem referência, revisão e equipe fictícia responsável. Consulte [APRESENTACAO.md](APRESENTACAO.md) para demonstrar a jornada e seus limites.
 
 No pacote offline e no GitHub Pages, **Entrar** e **Cadastrar** demonstram a conta do cliente com dados fictícios e e-mail `@example.test`. O cadastro fica no navegador. O ambiente autenticado usa a verificação de conta do servidor.
+
+O cliente pode complementar chamados em andamento e avaliar o atendimento concluído. Os indicadores são calculados a partir dos dados de demonstração deste navegador.

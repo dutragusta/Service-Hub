@@ -671,3 +671,8 @@ progress { width: min(100%, 20rem); accent-color: var(--action); height: .75rem;
   .customer-account-links .button { min-height: 44px; padding-inline: .45rem; }
   .topbar-actions:has(.customer-account-links) { flex-wrap: wrap; justify-content: flex-end; }
 }
+
+.desk-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.desk-metrics dd { font-size: clamp(1.2rem, 2.4vw, 1.9rem); }
+@media (max-width: 850px) { .desk-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 420px) { .desk-metrics { grid-template-columns: minmax(0, 1fr); } }

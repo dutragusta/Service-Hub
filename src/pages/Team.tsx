@@ -1,18 +1,18 @@
+import { responseSla, slaLabels } from '../services/response-sla'
 import { SummaryDetails } from '../components/TicketSummary'
 import { Permissions } from './Permissions'
 import { PortalAccounts } from './PortalAccess'
 import { canHandleTicket, triageQueue } from '../services/routing'
-import { queuePath, requireTeamRole, settingsPath, type TeamIdentity, type TeamRole } from '../services/access'
+import { deskPath, queuePath, requireTeamRole, settingsPath, type TeamIdentity, type TeamRole } from '../services/access'
 import { BarChart3, BookOpen, Building2, Users } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
-import { Link, Navigate, NavLink, Route, Routes, useParams } from 'react-router-dom'
+import { Link, Navigate, NavLink, Route, Routes, useParams, useSearchParams } from 'react-router-dom'
 import { Empty, Heading, StatusLabel, TopicIcon } from '../components/ui'
 import { getTopics, saveTopic, sessionMetrics } from '../services/operations'
-import { readTickets, updateTicket } from '../services/support'
+import { formatDateTime, normalize, readTickets, updateTicket } from '../services/support'
 import type { Profile, Topic } from '../types'
 import { ContextDetails, TicketTimeline } from './Tickets'
 
-const audiences = ['cliente'] as const
 const statuses = ['Aberto', 'Em atendimento', 'Resolvido'] as const
 const audienceLabel = { colaborador: 'Colaborador', cliente: 'Cliente' }
 
@@ -59,35 +59,78 @@ function SettingsHeading({ title, description }: { title: string, description: s
   return <div className="settings-heading"><h2>{title}</h2><p>{description}</p></div>
 }
 
+function accessibleTickets(identity: TeamIdentity) {
+  return readTickets('cliente').filter((ticket) => identity.role && (identity.demo || canHandleTicket(ticket, identity.role, identity.email)))
+}
+
+export function TeamDashboard({ identity }: { identity?: TeamIdentity }) {
+  if (identity === undefined) return <p role="status">Verificando acesso…</p>
+  if (!identity.role) return <Restricted />
+  const tickets = accessibleTickets(identity)
+  const now = Date.now()
+  const pending = tickets.filter((ticket) => ticket.status !== 'Resolvido')
+  const atRisk = pending.filter((ticket) => ['near', 'late'].includes(responseSla(ticket, now).status))
+  const evaluations = tickets.flatMap((ticket) => ticket.rating === undefined ? [] : [ticket.rating])
+  const average = evaluations.length ? new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 }).format(evaluations.reduce((sum, rating) => sum + rating, 0) / evaluations.length) + ' / 5' : 'Sem avaliações'
+  return <>
+    <Heading title="Painel de atendimento" description="Acompanhe os chamados dos clientes e as metas de primeira resposta." />
+    {identity.demo && <p className="alert">Demonstração local. Indicadores calculados com os chamados deste navegador.</p>}
+    <dl className="metric-grid desk-metrics">
+      <div className="card"><dt>Chamados ativos</dt><dd>{pending.length}</dd><Link to={queuePath + '?status=ativos'}>Ver ativos</Link></div>
+      <div className="card"><dt>Prazo próximo ou vencido</dt><dd>{atRisk.length}</dd><Link to={queuePath + '?sla=atencao'}>Ver prioridades</Link></div>
+      <div className="card"><dt>Resolvidos</dt><dd>{tickets.length - pending.length}</dd><Link to={queuePath + '?status=Resolvido'}>Ver resolvidos</Link></div>
+      <div className="card"><dt>Satisfação</dt><dd>{average}</dd><small>{evaluations.length} {evaluations.length === 1 ? 'avaliação' : 'avaliações'}</small></div>
+    </dl>
+    <section className="card saved-context">
+      <h2>Metas da demonstração</h2>
+      <p>O prazo da primeira resposta é de 4 horas corridas para impacto alto e 24 horas corridas para impacto normal. Mensagens do cliente e notas internas ficam fora dessa contagem.</p>
+      <Link className="button primary" to={queuePath}>Abrir fila de suporte</Link>
+    </section>
+  </>
+}
+
 function SupportQueue({ identity }: { identity: TeamIdentity }) {
-  const [status, setStatus] = useState('')
+  const [params, setParams] = useSearchParams()
+  const status = params.get('status') ?? ''
+  const slaFilter = params.get('sla') ?? ''
   const [impact, setImpact] = useState('')
   const [queue, setQueue] = useState('')
-  const [previewEmail, setPreviewEmail] = useState('')
-  const assigned = audiences.flatMap((profile) => readTickets(profile).map((ticket) => ({ profile, ticket })))
-    .filter(({ ticket }) => identity.role && (identity.demo || canHandleTicket(ticket, identity.role, identity.email)))
-  const queues = [...new Set(assigned.map(({ ticket }) => ticket.routing?.queue ?? triageQueue))].sort()
-  const analysts = [...new Set(assigned.flatMap(({ ticket }) => ticket.routing?.responsible ?? []))].sort()
-
-  const tickets = assigned.filter(({ ticket }) => (!status || ticket.status === status) && (!impact || ticket.priority === impact)
-    && (!queue || (ticket.routing?.queue ?? triageQueue) === queue)
-    && (identity.role !== 'admin' || !previewEmail || canHandleTicket(ticket, 'support', previewEmail)))
-    .sort((a, b) => Number(b.ticket.priority === 'Alta') - Number(a.ticket.priority === 'Alta') || Date.parse(b.ticket.date) - Date.parse(a.ticket.date))
+  const [query, setQuery] = useState('')
+  const assigned = accessibleTickets(identity)
+  const queues = [...new Set(assigned.map((ticket) => ticket.routing?.queue ?? triageQueue))].sort()
+  const now = Date.now()
+  const tickets = assigned.map((ticket) => ({ ticket, sla: responseSla(ticket, now) }))
+    .filter(({ ticket, sla }) => (!status || (status === 'ativos' ? ticket.status !== 'Resolvido' : ticket.status === status))
+      && (!impact || ticket.priority === impact) && (!queue || (ticket.routing?.queue ?? triageQueue) === queue)
+      && (!slaFilter || (slaFilter === 'atencao' ? ['near', 'late'].includes(sla.status) : sla.status === slaFilter))
+      && normalize(ticket.id + ' ' + ticket.title).includes(normalize(query.trim())))
+    .sort((a, b) => Number(['near', 'late'].includes(b.sla.status)) - Number(['near', 'late'].includes(a.sla.status))
+      || Number(b.ticket.priority === 'Alta') - Number(a.ticket.priority === 'Alta') || Date.parse(b.ticket.date) - Date.parse(a.ticket.date))
+  function setFilter(key: string, value: string) {
+    const next = new URLSearchParams(params)
+    if (value) next.set(key, value)
+    else next.delete(key)
+    setParams(next, { replace: true })
+  }
   return <>
+    <Link className="back" to={deskPath}>Voltar ao painel</Link>
     <Heading title="Fila de suporte" description="Assuma um chamado, consulte o diagnóstico e registre a solução." />
     {identity.demo && <p className="alert" role="status">Modo local de apresentação. A conta fictícia pode atender os chamados deste navegador.</p>}
     <div className="filter-bar">
-      <label>Status<select value={status} onChange={(event) => setStatus(event.target.value)}><option value="">Todos os status</option>{statuses.map((item) => <option key={item}>{item}</option>)}</select></label>
+      <label>Status<select value={status} onChange={(event) => setFilter('status', event.target.value)}><option value="">Todos os status</option><option value="ativos">Chamados ativos</option>{statuses.map((item) => <option key={item}>{item}</option>)}</select></label>
       <label>Impacto<select value={impact} onChange={(event) => setImpact(event.target.value)}><option value="">Todos os impactos</option><option value="Normal">Normal</option><option value="Alta">Alto</option></select></label>
       <label>Fila<select value={queue} onChange={(event) => setQueue(event.target.value)}><option value="">Todas as filas</option>{queues.map((item) => <option key={item}>{item}</option>)}</select></label>
-      {identity.role === 'admin' && <label>Simular responsável (demo)<select value={previewEmail} onChange={(event) => setPreviewEmail(event.target.value)}><option value="">Todos os responsáveis</option>{analysts.map((email) => <option key={email}>{email}</option>)}</select></label>}
+      <label>Primeira resposta<select value={slaFilter} onChange={(event) => setFilter('sla', event.target.value)}>
+        <option value="">Todos os prazos</option><option value="atencao">Prazo próximo ou vencido</option><option value="near">Vence em até 2h</option><option value="late">Vencido</option>
+      </select></label>
+      <label>Buscar chamado<input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Título ou protocolo" /></label>
     </div>
     <p className="search-summary" role="status">{tickets.length} {tickets.length === 1 ? 'chamado encontrado' : 'chamados encontrados'}</p>
     {tickets.length ? <ul className="ticket-list" aria-label="Fila de chamados">
-      {tickets.map(({ profile, ticket }) => <li key={profile + ticket.id}>
-        <Link to={queuePath + '/' + profile + '/' + ticket.id}>
-          <div><strong>{ticket.title}</strong><small>{ticket.id} · {audienceLabel[profile]} · {ticket.routing?.queue ?? triageQueue} · {ticket.assignee ?? 'Sem responsável'}</small></div>
-          <small>Impacto {ticket.priority === 'Alta' ? 'alto' : 'normal'}</small><StatusLabel status={ticket.status} />
+      {tickets.map(({ ticket, sla }) => <li key={ticket.id}>
+        <Link to={queuePath + '/cliente/' + ticket.id}>
+          <div><strong>{ticket.title}</strong><small>{ticket.id} · {ticket.routing?.queue ?? triageQueue} · {ticket.assignee ?? 'Sem responsável'}</small></div>
+          <small>Impacto {ticket.priority === 'Alta' ? 'alto' : 'normal'}<br />{slaLabels[sla.status]}</small><StatusLabel status={ticket.status} />
         </Link>
       </li>)}
     </ul> : <Empty title="Nenhum chamado com esses filtros" />}
@@ -104,11 +147,12 @@ function SupportTicketForm({ profile, ticketId, identity }: { profile: Profile, 
   const [pending, setPending] = useState(false)
   const [ticket, setTicket] = useState(() => readTickets(profile).find(({ id }) => id === ticketId))
   const [message, setMessage] = useState('')
+  const [note, setNote] = useState('')
   const [feedback, setFeedback] = useState('')
   const [error, setError] = useState('')
   if (!ticket || !identity.role || (!identity.demo && !canHandleTicket(ticket, identity.role, identity.email))) return <Empty title="Chamado indisponível"><Link to={queuePath}>Voltar à fila</Link></Empty>
 
-  async function apply(kind: 'claim' | 'reply' | 'resolve') {
+  async function apply(kind: 'claim' | 'reply' | 'resolve' | 'note') {
     setError('')
     setFeedback('')
     setPending(true)
@@ -118,9 +162,10 @@ function SupportTicketForm({ profile, ticketId, identity }: { profile: Profile, 
       if (!savedTicket || !current.role || (!current.demo && !canHandleTicket(savedTicket, current.role, current.email))) {
         throw new Error('Sua conta não tem acesso a este chamado.')
       }
-      setTicket(updateTicket(profile, ticketId, kind === 'claim' ? { kind } : { kind, text: message }))
-      setMessage('')
-      setFeedback(kind === 'claim' ? 'Chamado assumido.' : kind === 'reply' ? 'Resposta publicada na linha do tempo.' : 'Solução registrada e chamado resolvido.')
+      setTicket(updateTicket(profile, ticketId, kind === 'claim' ? { kind } : { kind, text: kind === 'note' ? note : message }))
+      if (kind === 'note') setNote('')
+      else setMessage('')
+      setFeedback(kind === 'claim' ? 'Chamado assumido.' : kind === 'reply' ? 'Resposta publicada na linha do tempo.' : kind === 'note' ? 'Nota interna registrada.' : 'Solução registrada e chamado resolvido.')
     } catch (failure) {
       setError(failure instanceof Error ? failure.message : 'Não foi possível atualizar o chamado.')
       setTicket(readTickets(profile).find(({ id }) => id === ticketId))
@@ -143,9 +188,24 @@ function SupportTicketForm({ profile, ticketId, identity }: { profile: Profile, 
         {ticket.context && <><h3>Resumo do diagnóstico</h3><ContextDetails context={ticket.context} /></>}
         {ticket.status === 'Aberto' && <button className="button primary" disabled={pending} onClick={() => void apply('claim')}>Assumir chamado</button>}
         {ticket.status === 'Em atendimento' && <div className="team-editor">
+          <label>Resposta rápida<select value="" onChange={(event) => { if (event.target.value) setMessage(message ? message + '\n\n' + event.target.value : event.target.value) }}>
+            <option value="">Selecionar modelo</option>
+            <option value="Recebemos sua solicitação e estamos analisando o relato e os testes já realizados.">Confirmar recebimento</option>
+            <option value="Pode informar quando o erro ocorreu e qual mensagem apareceu? Evite compartilhar senhas ou códigos.">Pedir evidências</option>
+          </select></label>
           <label>Resposta ou solução<textarea value={message} rows={4} maxLength={1200} onChange={(event) => setMessage(event.target.value)} /></label>
           <div className="actions"><button className="button secondary" disabled={pending || !message.trim()} onClick={() => void apply('reply')}>Publicar resposta</button><button className="button primary" disabled={pending || !message.trim()} onClick={() => void apply('resolve')}>Registrar solução e resolver</button></div>
         </div>}
+        <section className="saved-context team-editor">
+          <h3>Notas internas</h3>
+          <p>Visíveis na área da equipe na demonstração.</p>
+          {(ticket.internalNotes ?? []).map(({ at, text }, index) => <div key={at + index}><small>{formatDateTime(at)}</small><p className="preserve">{text}</p></div>)}
+          {ticket.status !== 'Resolvido' && <>
+            <label>Nova nota interna<textarea value={note} onChange={(event) => setNote(event.target.value)} rows={3} maxLength={1200} /></label>
+            <div><button className="button secondary" type="button" disabled={pending || !note.trim()} onClick={() => void apply('note')}>Salvar nota interna</button></div>
+          </>}
+        </section>
+        {ticket.rating !== undefined && <p>Avaliação do cliente: {ticket.rating} de 5.</p>}
         {ticket.resolution && <><h3>Solução registrada</h3><p className="preserve">{ticket.resolution}</p></>}
         {error && <p role="alert" className="alert error">{error}</p>}
         {feedback && <p role="status" className="alert success">{feedback}</p>}

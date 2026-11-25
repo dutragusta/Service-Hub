@@ -33,6 +33,8 @@ export type Ticket = {
   assignee?: string
   dueAt?: string
   resolution?: string
+  internalNotes?: { at: string, text: string }[]
+  rating?: number
   events?: TicketEvent[]
 }
 
@@ -53,7 +55,7 @@ export type TicketContext = {
 
 export type TicketEvent = { at: string } & (
   { type: 'status', status: Status } |
-  { type: 'reply', author: string, text: string } |
+  { type: 'reply', author: string, text: string, sender?: 'cliente' } |
   { type: 'attachment', name: string, text: string }
 )
 

@@ -29,6 +29,12 @@ export const seed: Record<Profile, Ticket[]> = {
     },
   ],
   cliente: [
+    {
+      id: 'SH-2043', title: 'Falha na emissão de comprovante', category: 'Suporte a serviços',
+      description: 'O cliente informou que a emissão do comprovante falhou para dois usuários de teste. A conferência do dia está parada.',
+      priority: 'Alta', status: 'Aberto', date: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
+      routing: { queue: 'Suporte a serviços', responsible: [] },
+    },
     { id: 'SH-2041', title: 'Consulta de documentação do serviço', category: 'Documentação', description: 'Solicitação de orientação para localizar documentação contratual.', priority: 'Normal', status: 'Em atendimento', date: '2026-11-23T14:00:00Z',
       assignee: 'Equipe de atendimento ao cliente', dueAt: '2026-11-25T15:00:00Z',
       events: [{ type: 'status', status: 'Em atendimento', at: '2026-11-23T14:20:00Z' }],

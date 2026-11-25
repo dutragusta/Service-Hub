@@ -14,8 +14,8 @@ Use o mesmo navegador e o mesmo endereço durante toda a demonstração. Os cham
 2. Em **Testar um caso fictício**, selecione **Portal recusa acesso após recuperação**. O assistente identifica o assunto no catálogo da API local e pergunta se a página de entrada abre.
 3. Responda **Sim**. Abra a referência **KB-CLI-201 · Rev. 1.4** para mostrar o procedimento e o ponto de escalonamento. Volte ao assistente.
 4. Clique em **Continuo com o problema → Revisar e abrir chamado → Preencher evidências fictícias**. Confira o início às 10h20, a nova tentativa às 10h45 e a necessidade de consultar uma solicitação antes das 12h. Registre e anote o protocolo.
-5. No rodapé, selecione **Acesso da equipe → Abrir fila do analista · simulação local**. Abra o protocolo e confira o resumo, a referência e a fila **Acesso ao portal**.
-6. Clique em **Assumir chamado**. Registre uma solução fictícia, como “A equipe regularizou a associação da conta de demonstração. O cliente confirmou o acesso”. Clique em **Registrar solução e resolver** e abra **Ver como solicitante** para mostrar a atualização no mesmo protocolo.
+5. No rodapé, selecione **Acesso da equipe → Abrir central de atendimento · simulação local → Fila de suporte**. Abra o protocolo e confira o resumo, a referência e a fila **Acesso ao portal**.
+6. Clique em **Assumir chamado**. Você pode escolher uma resposta rápida e editá-la antes de publicar ou registrar uma nota interna. Registre uma solução fictícia, como “A equipe regularizou a associação da conta de demonstração. O cliente confirmou o acesso”. Clique em **Registrar solução e resolver** e abra **Ver como solicitante** para mostrar a atualização no mesmo protocolo.
 
 ## Caminhos adicionais
 
@@ -34,3 +34,10 @@ A integração com modelo externo é opcional no servidor da hospedagem. A ediç
 ## Conta de demonstração
 
 Use **Cadastrar** e **Entrar** no cabeçalho. No pacote offline e no GitHub Pages, o cadastro usa dados fictícios e um e-mail `@example.test`. Após cadastrar, use o mesmo e-mail para entrar e ver **Meu perfil**. O cadastro é local ao navegador, sem envio de e-mail ou senha, e serve apenas para apresentar a jornada da conta.
+
+## Painel e continuidade do atendimento
+
+- No **Painel de atendimento**, veja chamados ativos, prazos que exigem atenção, resolvidos e satisfação. Os contadores de chamados abrem a fila com o filtro correspondente.
+- A meta de primeira resposta é de 4 horas corridas para impacto alto e 24 horas para impacto normal. Respostas do cliente e notas da equipe não contam como primeira resposta do suporte.
+- Use **Ver como solicitante** para complementar um chamado aberto ou avaliar um chamado resolvido de 1 a 5. Volte ao painel para ver a média atualizada.
+- A central da equipe opera no pacote offline como simulação local. Notas internas ficam fora da visão do cliente, mas compartilham o armazenamento de demonstração deste navegador. Permissões reais e dados sensíveis exigem persistência e autorização no servidor.

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 
 export const settingsPath = '/equipe/configuracoes'
+export const deskPath = '/equipe/painel'
 export const queuePath = '/equipe/fila'
 
 export type TeamRole = 'admin' | 'support'
