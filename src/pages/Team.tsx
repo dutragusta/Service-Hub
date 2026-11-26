@@ -9,11 +9,11 @@ import { useState, type FormEvent } from 'react'
 import { Link, Navigate, NavLink, Route, Routes, useParams, useSearchParams } from 'react-router-dom'
 import { Empty, Heading, StatusLabel, TopicIcon } from '../components/ui'
 import { getTopics, saveTopic, sessionMetrics } from '../services/operations'
-import { formatDateTime, normalize, readTickets, updateTicket } from '../services/support'
+import { formatDateTime, isTicketComplete, normalize, readTickets, updateTicket } from '../services/support'
 import type { Profile, Topic } from '../types'
 import { ContextDetails, TicketTimeline } from './Tickets'
 
-const statuses = ['Aberto', 'Em atendimento', 'Resolvido'] as const
+const statuses = ['Aberto', 'Em atendimento', 'Resolvido', 'Encerrado'] as const
 const audienceLabel = { colaborador: 'Colaborador', cliente: 'Cliente' }
 
 function Restricted() {
@@ -68,7 +68,7 @@ export function TeamDashboard({ identity }: { identity?: TeamIdentity }) {
   if (!identity.role) return <Restricted />
   const tickets = accessibleTickets(identity)
   const now = Date.now()
-  const pending = tickets.filter((ticket) => ticket.status !== 'Resolvido')
+  const pending = tickets.filter((ticket) => !isTicketComplete(ticket.status))
   const atRisk = pending.filter((ticket) => ['near', 'late'].includes(responseSla(ticket, now).status))
   const evaluations = tickets.flatMap((ticket) => ticket.rating === undefined ? [] : [ticket.rating])
   const average = evaluations.length ? new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 }).format(evaluations.reduce((sum, rating) => sum + rating, 0) / evaluations.length) + ' / 5' : 'Sem avaliações'
@@ -78,7 +78,7 @@ export function TeamDashboard({ identity }: { identity?: TeamIdentity }) {
     <dl className="metric-grid desk-metrics">
       <div className="card"><dt>Chamados ativos</dt><dd>{pending.length}</dd><Link to={queuePath + '?status=ativos'}>Ver ativos</Link></div>
       <div className="card"><dt>Prazo próximo ou vencido</dt><dd>{atRisk.length}</dd><Link to={queuePath + '?sla=atencao'}>Ver prioridades</Link></div>
-      <div className="card"><dt>Resolvidos</dt><dd>{tickets.length - pending.length}</dd><Link to={queuePath + '?status=Resolvido'}>Ver resolvidos</Link></div>
+      <div className="card"><dt>Concluídos</dt><dd>{tickets.length - pending.length}</dd><Link to={queuePath + '?status=concluidos'}>Ver concluídos</Link></div>
       <div className="card"><dt>Satisfação</dt><dd>{average}</dd><small>{evaluations.length} {evaluations.length === 1 ? 'avaliação' : 'avaliações'}</small></div>
     </dl>
     <section className="card saved-context">
@@ -100,7 +100,7 @@ function SupportQueue({ identity }: { identity: TeamIdentity }) {
   const queues = [...new Set(assigned.map((ticket) => ticket.routing?.queue ?? triageQueue))].sort()
   const now = Date.now()
   const tickets = assigned.map((ticket) => ({ ticket, sla: responseSla(ticket, now) }))
-    .filter(({ ticket, sla }) => (!status || (status === 'ativos' ? ticket.status !== 'Resolvido' : ticket.status === status))
+    .filter(({ ticket, sla }) => (!status || (status === 'ativos' ? !isTicketComplete(ticket.status) : status === 'concluidos' ? isTicketComplete(ticket.status) : ticket.status === status))
       && (!impact || ticket.priority === impact) && (!queue || (ticket.routing?.queue ?? triageQueue) === queue)
       && (!slaFilter || (slaFilter === 'atencao' ? ['near', 'late'].includes(sla.status) : sla.status === slaFilter))
       && normalize(ticket.id + ' ' + ticket.title).includes(normalize(query.trim())))
@@ -117,7 +117,7 @@ function SupportQueue({ identity }: { identity: TeamIdentity }) {
     <Heading title="Fila de suporte" description="Assuma um chamado, consulte o diagnóstico e registre a solução." />
     {identity.demo && <p className="alert" role="status">Modo local de apresentação. A conta fictícia pode atender os chamados deste navegador.</p>}
     <div className="filter-bar">
-      <label>Status<select value={status} onChange={(event) => setFilter('status', event.target.value)}><option value="">Todos os status</option><option value="ativos">Chamados ativos</option>{statuses.map((item) => <option key={item}>{item}</option>)}</select></label>
+      <label>Status<select value={status} onChange={(event) => setFilter('status', event.target.value)}><option value="">Todos os status</option><option value="ativos">Chamados ativos</option><option value="concluidos">Chamados concluídos</option>{statuses.map((item) => <option key={item}>{item}</option>)}</select></label>
       <label>Impacto<select value={impact} onChange={(event) => setImpact(event.target.value)}><option value="">Todos os impactos</option><option value="Normal">Normal</option><option value="Alta">Alto</option></select></label>
       <label>Fila<select value={queue} onChange={(event) => setQueue(event.target.value)}><option value="">Todas as filas</option>{queues.map((item) => <option key={item}>{item}</option>)}</select></label>
       <label>Primeira resposta<select value={slaFilter} onChange={(event) => setFilter('sla', event.target.value)}>
@@ -200,7 +200,7 @@ function SupportTicketForm({ profile, ticketId, identity }: { profile: Profile, 
           <h3>Notas internas</h3>
           <p>Visíveis na área da equipe na demonstração.</p>
           {(ticket.internalNotes ?? []).map(({ at, text }, index) => <div key={at + index}><small>{formatDateTime(at)}</small><p className="preserve">{text}</p></div>)}
-          {ticket.status !== 'Resolvido' && <>
+          {!isTicketComplete(ticket.status) && <>
             <label>Nova nota interna<textarea value={note} onChange={(event) => setNote(event.target.value)} rows={3} maxLength={1200} /></label>
             <div><button className="button secondary" type="button" disabled={pending || !note.trim()} onClick={() => void apply('note')}>Salvar nota interna</button></div>
           </>}

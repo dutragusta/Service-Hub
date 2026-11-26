@@ -98,6 +98,13 @@ O worker gera o resumo em `POST /api/tickets/summary`. Sem configuração de IA,
 
 Veja [Segurança e roteiro de demonstração](SEGURANCA.md). Execute `node scripts/check-ticket-summary.mjs` para validar a API, a estrutura do resumo e o tratamento de falha do provedor simulado.
 
+## Cadastro, anexos e confirmação por e-mail
+
+- Novos cadastros solicitam o CNPJ. O formulário e a API validam os dígitos verificadores dos formatos numérico e alfanumérico. A migração `0003_portal_account_cnpj.sql` adiciona a coluna e preserva os cadastros anteriores.
+- O cliente pode encerrar e reabrir o mesmo protocolo. O histórico e os anexos continuam no chamado. Antes do registro ou durante o atendimento, pode adicionar até três imagens JPG, PNG ou WebP. O navegador converte as imagens para WebP e as mantém junto com o chamado no armazenamento local.
+- Na execução local e no GitHub Pages, o envio por e-mail é simulado. A fila local usa os chamados gravados no mesmo navegador. As imagens aparecem na linha do tempo e ficam fora do e-mail.
+- Para ativar o envio real no worker autenticado, configure o segredo `RESEND_API_KEY` e as variáveis `TICKET_EMAIL_FROM` (remetente de um domínio verificado no Resend) e `TICKET_SUPPORT_EMAIL` (caixa da equipe). Use o e-mail verificado de uma conta de cliente aprovada. Ao registrar, o cliente recebe o protocolo e o relato e o suporte recebe também o resumo e a fila. O chamado fica salvo no navegador se o envio falhar. A confirmação na tela indica que o provedor aceitou os dois e-mails.
+
 ## Apresentação offline
 
 Para executar a aplicação completa localmente, rode `npm ci`, `npm run build` e `npm run demo`. Abra `http://127.0.0.1:4173/`. O pacote compilado pode ser iniciado diretamente com `node scripts/serve-demo.mjs` ou pelo `iniciar-demo.cmd` no Windows.

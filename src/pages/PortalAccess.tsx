@@ -7,7 +7,7 @@ import { enterDemoCustomer } from '../services/demo-account'
 import type { Profile } from '../types'
 
 type ApplicationStatus = 'pending' | 'approved' | 'rejected'
-type Account = { name: string; company: string; status: ApplicationStatus }
+type Account = { name: string; company: string; cnpj?: string | null; status: ApplicationStatus }
 type Access = { account: Account | null; canEnter: boolean }
 type ManagedAccount = Account & { subject: string; email: string }
 const statusLabels = { pending: 'Em análise', approved: 'Aprovado', rejected: 'Recusado' }
@@ -56,7 +56,7 @@ function PortalAccessForm({ registration }: { registration: boolean }) {
     if ((check !== 'ready' && check !== 'demo') || saving) return
     const form = new FormData(event.currentTarget)
     const details = { profile, action: registration ? 'register' : 'verify', email: String(form.get('email') ?? '').trim() }
-    const organization = { name: String(form.get('name') ?? '').trim(), company: String(form.get('company') ?? '').trim() }
+    const organization = { name: String(form.get('name') ?? '').trim(), company: String(form.get('company') ?? '').trim(), cnpj: String(form.get('cnpj') ?? '').trim() }
     setError('')
     setFeedback('')
     setSaving(true)
@@ -102,7 +102,7 @@ function PortalAccessForm({ registration }: { registration: boolean }) {
       {demo && <div className="customer-access-demo" id="customer-access-demo">
         <Info size={18} aria-hidden />
         <div><strong>Modo demonstração</strong>
-          <p>{registration ? <>Use nome e empresa fictícios e um e-mail como <strong>cliente@example.test</strong>. O cadastro fica neste navegador.</>
+          <p>{registration ? <>Use dados fictícios, como <strong>cliente@example.test</strong> e o CNPJ de teste <strong>11.222.333/0001-81</strong>.</>
             : <>Entre com um e-mail de demonstração como <strong>cliente@example.test</strong>.</>}</p>
         </div>
       </div>}
@@ -114,7 +114,10 @@ function PortalAccessForm({ registration }: { registration: boolean }) {
         <form className="ticket-form" onSubmit={submit}>
           {registration && <label>Nome completo<input autoComplete="name" name="name" required maxLength={100} /></label>}
           <label>{demo ? 'E-mail' : 'E-mail profissional'}<input type="email" autoComplete="email" name="email" required maxLength={254} aria-describedby={demo ? 'customer-access-demo' : undefined} /></label>
-          {registration && <label>Empresa<input autoComplete="organization" name="company" required maxLength={120} /></label>}
+          {registration && <>
+            <label>Empresa<input autoComplete="organization" name="company" required maxLength={120} /></label>
+            <label>CNPJ<input name="cnpj" required maxLength={18} autoCapitalize="characters" spellCheck={false} /></label>
+          </>}
           {check === 'ready' && <p className="muted">Use o mesmo e-mail verificado pela sua sessão.</p>}
           {error && <p className="alert error" role="alert">{error}</p>}
           {check === 'signed-out' ? <a className="button primary customer-access-submit" href={signIn} target="_top">Entrar com ChatGPT <ArrowRight size={18} aria-hidden /></a> :

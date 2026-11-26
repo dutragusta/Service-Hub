@@ -1,5 +1,7 @@
 import knowledgeBase from '../src/data/base-atendimento.json'
 import { ticketSummaryApi } from './ticket-summary.js'
+import { validCnpj } from '../src/services/cnpj.mjs'
+import { ticketEmailApi } from './ticket-email.js'
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const inviteDuration = 48 * 60 * 60 * 1000
@@ -73,7 +75,7 @@ async function portalAccountApi(request, db, path, identity) {
 
   if (managing) {
     if (method === 'GET') {
-      const { results } = await db.prepare('SELECT subject, name, email, company, status, updated_at FROM demo_portal_accounts WHERE profile = ? ORDER BY updated_at DESC LIMIT 250').bind(profile).all()
+      const { results } = await db.prepare('SELECT subject, name, email, company, cnpj, status, updated_at FROM demo_portal_accounts WHERE profile = ? ORDER BY updated_at DESC LIMIT 250').bind(profile).all()
       return json({ entries: results })
     }
     if (!['approved', 'rejected'].includes(body?.status) || typeof body.subject !== 'string' || !body.subject || body.subject.length > 256) {
@@ -84,7 +86,7 @@ async function portalAccountApi(request, db, path, identity) {
     return result.meta.changes ? json({ saved: true }) : json({ error: 'A solicitação já foi revisada ou está indisponível.' }, 409)
   }
 
-  const lookup = () => db.prepare('SELECT name, company, status FROM demo_portal_accounts WHERE subject = ? AND profile = ?').bind(identity.subject, profile).first()
+  const lookup = () => db.prepare('SELECT name, company, cnpj, status FROM demo_portal_accounts WHERE subject = ? AND profile = ?').bind(identity.subject, profile).first()
   const access = (account) => ({ account, canEnter: account?.status === 'approved' })
   if (method === 'GET') return json(access(await lookup()))
 
@@ -100,8 +102,10 @@ async function portalAccountApi(request, db, path, identity) {
   if (!name || name.length > 100 || !company || company.length > 120) {
     return json({ error: 'Informe seu nome e sua empresa.' }, 400)
   }
-  const result = await db.prepare("INSERT INTO demo_portal_accounts (subject, profile, name, email, company, status, updated_at) VALUES (?, ?, ?, ?, ?, 'pending', ?) ON CONFLICT(subject, profile) DO UPDATE SET name = excluded.name, email = excluded.email, company = excluded.company, status = excluded.status, updated_at = excluded.updated_at WHERE demo_portal_accounts.status = 'rejected'")
-    .bind(identity.subject, profile, name, identity.email, company, Date.now()).run()
+  const cnpj = validCnpj(body.cnpj)
+  if (!cnpj) return json({ error: 'Informe um CNPJ válido.' }, 400)
+  const result = await db.prepare("INSERT INTO demo_portal_accounts (subject, profile, name, email, company, cnpj, status, updated_at) VALUES (?, ?, ?, ?, ?, ?, 'pending', ?) ON CONFLICT(subject, profile) DO UPDATE SET name = excluded.name, email = excluded.email, company = excluded.company, cnpj = excluded.cnpj, status = excluded.status, updated_at = excluded.updated_at WHERE demo_portal_accounts.status = 'rejected'")
+    .bind(identity.subject, profile, name, identity.email, company, cnpj, Date.now()).run()
   return result.meta.changes ? json(access(await lookup()), 201) : json({ error: 'Já existe um cadastro em análise ou aprovado para este perfil.' }, 409)
 }
 
@@ -116,7 +120,9 @@ export default {
     }
     if (path.startsWith('/api/')) {
       try {
-        return path === '/api/tickets/summary' ? await ticketSummaryApi(request, env) : await permissionApi(request, env.DB, path)
+        if (path === '/api/tickets/summary') return await ticketSummaryApi(request, env)
+        if (path === '/api/tickets/email') return await ticketEmailApi(request, env)
+        return await permissionApi(request, env.DB, path)
       } catch {
         const operation = ['/api/access', '/api/access/accept', '/api/team/access', '/api/portal/account', '/api/team/accounts'].includes(path) ? path : 'outra-rota'
         console.error('Erro na API do portal', request.method, operation)

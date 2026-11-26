@@ -1,6 +1,6 @@
 export type Profile = 'colaborador' | 'cliente'
 export type Priority = 'Normal' | 'Alta'
-export type Status = 'Aberto' | 'Em atendimento' | 'Resolvido'
+export type Status = 'Aberto' | 'Em atendimento' | 'Resolvido' | 'Encerrado'
 export type Topic = {
   id: string
   title: string
@@ -19,6 +19,9 @@ export type RoutingRule = { topic: string; queue: string; responsible: string[] 
 export type CostCenter = { code: string; name: string; rules: RoutingRule[] }
 export type TicketRouting = { centerCode?: string; centerName?: string; queue: string; responsible: string[] }
 
+export type TicketImage = { name: string, dataUrl: string }
+export type TicketEmailStatus = 'sent' | 'failed' | 'demo' | 'unconfigured'
+
 export type Ticket = {
   id: string
   title: string
@@ -35,6 +38,7 @@ export type Ticket = {
   resolution?: string
   internalNotes?: { at: string, text: string }[]
   rating?: number
+  emailStatus?: TicketEmailStatus
   events?: TicketEvent[]
 }
 
@@ -54,9 +58,10 @@ export type TicketContext = {
 }
 
 export type TicketEvent = { at: string } & (
-  { type: 'status', status: Status } |
+  { type: 'status', status: Status, by?: 'cliente' } |
   { type: 'reply', author: string, text: string, sender?: 'cliente' } |
-  { type: 'attachment', name: string, text: string }
+  { type: 'attachment', name: string, text: string } |
+  ({ type: 'image' } & TicketImage)
 )
 
 export type IncidentDetails = {

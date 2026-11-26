@@ -482,6 +482,11 @@ progress { width: min(100%, 20rem); accent-color: var(--action); height: .75rem;
 .ticket-timeline strong { display: flex; align-items: center; gap: .35rem; line-height: 1.4; }
 .ticket-timeline time { display: block; color: var(--text); font-size: .82rem; margin: .2rem 0; }
 .ticket-timeline p, .attachment-link { font-size: .9rem; }
+.ticket-image-list { display: grid; gap: .5rem; padding: 0; margin: 0; list-style: none; }
+.ticket-image-list li { display: grid; grid-template-columns: 3rem minmax(0, 1fr) auto; gap: .65rem; align-items: center; overflow-wrap: anywhere; }
+.ticket-image-list img { width: 3rem; height: 3rem; object-fit: cover; border-radius: 6px; }
+.ticket-image-preview { display: block; max-width: min(100%, 14rem); max-height: 9rem; object-fit: contain; border-radius: 6px; }
+
 @media (max-width: 570px) {
   .ticket-overview dl { grid-template-columns: minmax(0, 1fr); gap: .65rem; }
 }

@@ -114,7 +114,7 @@ function PortalShell({ conversation, update }: { conversation?: Conversation, up
           <Route path="diagnostico/:id" element={<Diagnosis key={route[1]} profile={profile} id={route[1]} />} />
           <Route path="chamados" element={<Tickets profile={profile} />} />
           <Route path="chamados/novo" element={<NewTicket key={location.search} profile={profile} />} />
-          <Route path="chamados/:id" element={<TicketDetail profile={profile} key={route[1]} id={route[1]} created={location.state?.created === true} />} />
+          <Route path="chamados/:id" element={<TicketDetail profile={profile} key={route[1]} id={route[1]} created={location.state?.created === true} initialEmailStatus={location.state?.emailStatus} />} />
           <Route path="conhecimento" element={<Knowledge profile={profile} />} />
           <Route path="conhecimento/:id" element={<Knowledge profile={profile} article={route[1]} />} />
           <Route path="*" element={<Empty title="Página indisponível"><Link to={base}>Voltar ao início</Link></Empty>} />

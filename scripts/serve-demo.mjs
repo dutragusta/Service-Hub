@@ -20,7 +20,7 @@ const originHost = new URL(origin).host
 const identity = 'analista.demo@example.test'
 const model = process.env.OLLAMA_MODEL?.trim() || 'llama3.1:8b'
 const ollama = createOllamaSummary(model)
-const env = { OLLAMA_SYNOPSIS: ollama.summarize }
+const env = { OLLAMA_SYNOPSIS: ollama.summarize, TICKET_EMAIL_DEMO: true }
 const routes = new Map([
   ['/api/access', { role: 'support', email: identity, demo: true }],
   ['/api/portal/account', { demo: true }],
@@ -50,7 +50,7 @@ const server = createServer(async (incoming, outgoing) => {
     if (method === 'GET' && routes.has(parsed.pathname)) {
       response = Response.json(routes.get(parsed.pathname), { headers: { 'Cache-Control': 'no-store' } })
     } else if (parsed.pathname.startsWith('/api/') &&
-      !['/api/knowledge', '/api/tickets/summary'].includes(parsed.pathname)) {
+      !['/api/knowledge', '/api/tickets/summary', '/api/tickets/email'].includes(parsed.pathname)) {
       incoming.resume()
       response = Response.json({ error: 'Esta operação requer a hospedagem autenticada.' }, { status: 503 })
     } else {

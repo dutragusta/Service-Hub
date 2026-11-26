@@ -16,6 +16,7 @@ export function MyProfile({ profile, role }: { profile: Profile; role?: TeamRole
     <section className="card narrow" aria-label="Perfil em uso">
       <dl><dt>Portal</dt><dd>{profiles[profile].portal}</dd><dt>Perfil</dt><dd>{access}</dd>{demoCustomer && <>
         <dt>Nome fictício</dt><dd>{demoCustomer.name}</dd><dt>Empresa fictícia</dt><dd>{demoCustomer.company}</dd><dt>E-mail de demonstração</dt><dd>{demoCustomer.email}</dd>
+        {demoCustomer.cnpj && <><dt>CNPJ</dt><dd>{demoCustomer.cnpj}</dd></>}
       </>}</dl>
       <div className="actions">
         <Link className="button secondary" to="/cliente">Voltar ao portal</Link>
@@ -29,6 +30,7 @@ function activityLabel(event: TicketEvent) {
   switch (event.type) {
     case 'status': return 'Status alterado para ' + event.status
     case 'reply': return 'Resposta de ' + event.author
+    case 'image':
     case 'attachment': return 'Anexo adicionado'
   }
 }

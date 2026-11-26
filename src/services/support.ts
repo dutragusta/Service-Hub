@@ -1,6 +1,7 @@
 import { getTopics } from './operations'
 import { seed } from '../demo'
-import type { Profile, Ticket, Topic } from '../types'
+import { ticketImageLimit } from './ticket-images'
+import type { Profile, Status, Ticket, TicketEmailStatus, TicketImage, Topic } from '../types'
 
 export function normalize(value: string) {
   return value.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '')
@@ -59,7 +60,21 @@ export function formatDateTime(date: string) {
   return new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Sao_Paulo' }).format(new Date(date))
 }
 
+export function isTicketComplete(status: Status) {
+  return status === 'Resolvido' || status === 'Encerrado'
+}
+
+export function recordTicketEmail(profile: Profile, id: string, emailStatus: TicketEmailStatus) {
+  const tickets = readTickets(profile)
+  const updated = tickets.map((ticket) => ticket.id === id ? { ...ticket, emailStatus } : ticket)
+  localStorage.setItem(prefix + profile, JSON.stringify(updated))
+  return updated.find((ticket) => ticket.id === id)
+}
+
 export type TicketAction =
+  | { kind: 'close' }
+  | { kind: 'reopen' }
+  | { kind: 'images', images: TicketImage[] }
   | { kind: 'claim' }
   | { kind: 'reply', text: string }
   | { kind: 'resolve', text: string }
@@ -73,12 +88,27 @@ export function updateTicket(profile: Profile, id: string, action: TicketAction)
   const tickets = readTickets(profile)
   const current = tickets.find((ticket) => ticket.id === id)
   if (!current) throw new Error('Chamado indisponível.')
-  if (current.status === 'Resolvido' && action.kind !== 'rate') throw new Error('Este chamado já foi concluído.')
+  if (isTicketComplete(current.status) && action.kind !== 'rate' && action.kind !== 'reopen') throw new Error('Este chamado já foi concluído.')
   const at = new Date().toISOString()
   const events = [...(current.events ?? [])]
   const updated = { ...current, events }
 
-  if (action.kind === 'rate') {
+  if (action.kind === 'close' || action.kind === 'reopen') {
+    if (profile !== 'cliente') throw new Error('Ação disponível no portal do cliente.')
+    if (action.kind === 'reopen' && !isTicketComplete(current.status)) throw new Error('Este chamado já está ativo.')
+    updated.status = action.kind === 'close' ? 'Encerrado' : 'Aberto'
+    events.push({ type: 'status', status: updated.status, by: 'cliente', at })
+    if (action.kind === 'reopen') {
+      delete updated.assignee
+      delete updated.resolution
+      delete updated.rating
+      delete updated.dueAt
+    }
+  } else if (action.kind === 'images') {
+    const count = events.filter((event) => event.type === 'image').length
+    if (!action.images.length || count + action.images.length > ticketImageLimit) throw new Error('O chamado aceita até três imagens.')
+    events.push(...action.images.map((image) => ({ ...image, type: 'image' as const, at })))
+  } else if (action.kind === 'rate') {
     if (current.status !== 'Resolvido' || current.rating !== undefined || !Number.isInteger(action.value) || action.value < 1 || action.value > 5) {
       throw new Error('O chamado precisa estar resolvido e aceita uma avaliação de 1 a 5.')
     }

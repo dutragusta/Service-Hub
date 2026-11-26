@@ -26,7 +26,7 @@ export function TopicCards({ topics, url }: { topics: Topic[], url: (id: string)
 }
 
 export function StatusLabel({ status }: { status: Status }) {
-  return <span className={'status ' + (status === 'Resolvido' ? 'resolved' : status === 'Aberto' ? 'open' : 'progress')}>{status}</span>
+  return <span className={'status ' + (status === 'Resolvido' || status === 'Encerrado' ? 'resolved' : status === 'Aberto' ? 'open' : 'progress')}>{status}</span>
 }
 
 export function Empty({ title, children }: { title: string, children?: ReactNode }) {

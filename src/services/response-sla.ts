@@ -1,3 +1,4 @@
+import { isTicketComplete } from './support'
 import type { Ticket } from '../types'
 
 const hour = 60 * 60 * 1000
@@ -19,7 +20,7 @@ export function responseSla(ticket: Ticket, now = Date.now()): { status: SlaStat
     .sort((a, b) => a - b)[0]
   const remaining = deadline - now
   const status = response !== undefined ? (response <= deadline ? 'met' : 'missed')
-    : ticket.status === 'Resolvido' ? 'unknown'
+    : isTicketComplete(ticket.status) ? 'unknown'
     : remaining <= 0 ? 'late' : remaining <= 2 * hour ? 'near' : 'pending'
   return { status, deadline: new Date(deadline).toISOString() }
 }
