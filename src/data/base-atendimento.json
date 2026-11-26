@@ -153,6 +153,8 @@
         "conectividade",
         "instabilidade",
         "fora do ar",
+        "erro 500",
+        "exportar relatório",
         "serviços contratados"
       ],
       "question": "Outros usuários autorizados observam a mesma falha?",

@@ -45,6 +45,18 @@ export function routeInternalTicket(code: string, topic: string): TicketRouting 
   }
 }
 
+export const customerReviewCategories = [
+  { id: 'boleto', title: 'Boleto', queue: 'Financeiro', terms: /\bboletos?\b/ },
+  { id: 'nota-fiscal', title: 'Nota fiscal', queue: 'Faturamento', terms: /\b(nota fiscal|notas fiscais|nf-e|danfe)\b/ },
+  { id: 'contrato', title: 'Contrato', queue: 'Contratos', terms: /\b(contratos?|aditivo contratual|rescisao contratual)\b/ },
+  { id: 'financeiro', title: 'Financeiro', queue: 'Financeiro', terms: /\b(cobranca em duplicidade|cobranca duplicada|estorno|cobranca indevida)\b/ },
+]
+
+export function customerReviewCategory(report: string) {
+  const text = report.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '')
+  return customerReviewCategories.find(({ terms }) => terms.test(text))
+}
+
 export function routeCustomerTicket(topic: string): TicketRouting {
   const queues: Record<string, string> = {
     portal: 'Acesso ao portal',
@@ -52,7 +64,8 @@ export function routeCustomerTicket(topic: string): TicketRouting {
     servicos: 'Suporte a serviços',
     conectividade: 'Conectividade',
   }
-  return { queue: queues[topic] ?? triageQueue, responsible: [] }
+  const review = customerReviewCategories.find(({ id }) => id === topic)
+  return { queue: review?.queue ?? queues[topic] ?? triageQueue, responsible: [] }
 }
 
 export function canHandleTicket(ticket: Ticket, role: TeamRole, email?: string) {

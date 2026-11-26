@@ -5,7 +5,7 @@ import { useRef, useState, type FormEvent } from 'react'
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { Empty, Heading, KnowledgeSource, StatusLabel } from '../components/ui'
 import { formatDate, formatDateTime, looksSensitive, readTickets, saveTicket, updateTicket, type TicketAction } from '../services/support'
-import { readCostCenters, routeCustomerTicket, routeInternalTicket } from '../services/routing'
+import { customerReviewCategories, customerReviewCategory, readCostCenters, routeCustomerTicket, routeInternalTicket } from '../services/routing'
 import { SummaryDetails } from '../components/TicketSummary'
 import { demoIncidents } from '../data/demo-incidents'
 import { summarizeTicket } from '../services/summarization'
@@ -46,8 +46,10 @@ export function NewTicket({ profile }: { profile: Profile }) {
   const [outcome, setOutcome] = useState(context?.outcome ?? '')
   const topics = getTopics(profile)
   const selected = topics.find((topic) => topic.id === params.get('assunto'))
-  const [category, setCategory] = useState(selected?.title ?? (context?.exampleId ? 'Outro assunto' : ''))
-  const example = demoIncidents[profile].find((item) => item.id === context?.exampleId && (item.topic === selected?.id || (!selected && item.topic === 'outro')))
+  const reviewCategories = profile === 'cliente' ? customerReviewCategories : []
+  const example = demoIncidents[profile].find((item) => item.id === context?.exampleId && (selected ? item.topic === selected.id : item.topic === 'outro' || reviewCategories.some(({ id }) => id === item.topic)))
+  const review = profile === 'cliente' && !selected && context?.report ? customerReviewCategory(context.report) : undefined
+  const [category, setCategory] = useState(selected?.title ?? review?.title ?? (example ? 'Outro assunto' : ''))
   const [title, setTitle] = useState(example?.title ?? (selected ? 'Dificuldade com ' + selected.title : ''))
   const [center, setCenter] = useState(example?.center ?? '')
   const [priority, setPriority] = useState<Priority>(example?.priority ?? 'Normal')
@@ -70,7 +72,7 @@ export function NewTicket({ profile }: { profile: Profile }) {
   function loadExample(id: string) {
     const example = demoIncidents[profile].find((item) => item.id === id)
     if (!example) return
-    setCategory(topics.find((topic) => topic.id === example.topic)?.title ?? 'Outro assunto')
+    setCategory(topics.find((topic) => topic.id === example.topic)?.title ?? reviewCategories.find(({ id }) => id === example.topic)?.title ?? 'Outro assunto')
     setCenter(centers.find(({ code }) => code === example.center)?.code ?? '')
     setTitle(example.title)
     setDescription(example.description)
@@ -147,7 +149,7 @@ export function NewTicket({ profile }: { profile: Profile }) {
           </select>
         </label>}
         <label>Categoria<select name="category" required value={category} onChange={(event) => setCategory(event.target.value)} aria-invalid={Boolean(errors.category)} aria-describedby={errors.category ? 'category-error' : undefined}>
-          <option value="">Selecione o assunto</option>{topics.map((topic) => <option key={topic.id} data-topic={topic.id}>{topic.title}</option>)}<option>Outro assunto</option>
+          <option value="">Selecione o assunto</option>{[...topics, ...reviewCategories].map(({ id, title }) => <option key={id} data-topic={id}>{title}</option>)}<option>Outro assunto</option>
         </select>{errors.category && <span className="field-error" id="category-error" role="alert">{errors.category}</span>}</label>
         {profile === 'colaborador' && <label>Centro de custo
           <select name="costCenter" value={center} onChange={(event) => setCenter(event.target.value)}><option value="">Sem centro informado</option>{centers.map(({ code, name }) => <option key={code} value={code}>{code} · {name}</option>)}</select>

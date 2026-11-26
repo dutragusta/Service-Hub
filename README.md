@@ -92,7 +92,7 @@ O identificador da hospedagem e o hash do e-mail do administrador inicial são c
 
 ## Casos fictícios e resumo para o suporte
 
-Em **Abrir chamado → Preencher com caso fictício**, escolha um incidente do perfil e revise as condições antes do registro. Há exemplos de falha de acesso ao portal e de uma solicitação formal que exige atendimento humano. A demonstração por e-mail também mostra o resumo no encaminhamento ao analista.
+Em **Abrir chamado → Preencher com caso fictício**, escolha um incidente do perfil e revise as condições antes do registro. O portal do cliente inclui exemplos de boleto, nota fiscal, contrato, cobrança duplicada, erro de exportação e falha de acesso. Os cinco primeiros foram adaptados dos [cenários sintéticos do Offmoura/Hackathon](https://github.com/Offmoura/Hackathon/blob/main/data/chamados_sinteticos.json). A demonstração por e-mail também mostra o resumo no encaminhamento ao analista.
 
 O worker gera o resumo em `POST /api/tickets/summary`. Sem configuração de IA, a síntese usa regras no servidor. Para habilitar a redação por modelo, configure `OPENAI_API_KEY` como segredo e `OPENAI_SUMMARY_MODEL` com um modelo da API Responses que suporte respostas estruturadas. Use apenas dados fictícios. A versão estática preserva o fluxo com regras locais.
 

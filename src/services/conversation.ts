@@ -1,5 +1,6 @@
 import { getTopics, knowledgeReference } from './operations'
 import { identifyTopic, normalize } from './support'
+import { customerReviewCategory } from './routing'
 import type { KnowledgeReference, Profile, TicketContext, Topic } from '../types'
 
 type Message = { author: 'user' | 'assistant', text: string, source?: KnowledgeReference }
@@ -40,6 +41,15 @@ export function advance(conversation: Conversation, profile: Profile, text: stri
   const { stage, topic } = conversation
   if (/\b(abrir (um )?chamado|falar com (o )?suporte|atendente humano)\b/.test(normalized)) {
     return reply('Você pode abrir um chamado agora. Vou levar um resumo editável do que já foi informado.', { stage: 'escalate' })
+  }
+  const review = profile === 'cliente' && !topicId && (stage === 'initial' || stage === 'clarify' || stage === 'resolved')
+    ? customerReviewCategory(text)
+    : undefined
+  if (review) {
+    return reply('Esse pedido precisa de análise da equipe responsável. Abra um chamado para encaminhar seu relato à fila “' + review.queue + '”.', {
+      topic: undefined, stage: 'escalate', report: stage === 'clarify' ? [conversation.report, text].filter(Boolean).join('\n') : text,
+      assessment: undefined, guidance: undefined, outcome: undefined, exampleId: undefined,
+    })
   }
   if (!topicId && humanOnly.test(normalized)) {
     return reply('Esse pedido exige validação humana. A base do portal pode orientar consultas, mas a equipe precisa analisar a autorização e o procedimento aplicável. Você pode encaminhar o relato para o suporte.', {

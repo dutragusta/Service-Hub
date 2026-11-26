@@ -22,7 +22,8 @@ Use o mesmo navegador e o mesmo endereço durante toda a demonstração. Os cham
 | Caso | O que mostrar |
 | --- | --- |
 | Localizar manual do serviço | No assistente, escolha **Documentação**, indique que consegue acessar a área de documentos e conclua com **Sim, resolveu** após seguir a orientação. |
-| Declaração para auditoria | No assistente do cliente, selecione **Pedido de declaração para auditoria**. O pedido vai para triagem humana. O fluxo preserva o relato e indica que a equipe precisa validar o procedimento e a autorização. |
+| Segunda via de boleto | No assistente do cliente, selecione **Segunda via de boleto que vence amanhã**. Abra a revisão do chamado e confira a categoria **Boleto** e a fila **Financeiro**. |
+| Erro na exportação | Em **Abrir chamado**, selecione **Erro 500 ao exportar relatório mensal**. Confira a prioridade alta, os testes preenchidos e a fila **Suporte a serviços**. |
 | Retorno por e-mail | Em **Ver demonstração por e-mail**, simule o recebimento e selecione **Ainda preciso de ajuda**. A continuação acontece no mesmo protocolo, com resumo para o analista. |
 
 ## O que funciona neste ambiente
