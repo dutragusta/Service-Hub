@@ -4,6 +4,8 @@ Protótipo de autoatendimento para clientes com base de conhecimento, abertura e
 
 ## Demonstração em imagens
 
+[Ver também as capturas da triagem via Blip e SysAid](#fluxo-do-blip-ao-sysaid-em-imagens).
+
 ### Portal de Triagem
 
 A entrada permite abrir o assistente ou ir direto ao formulário de chamado.
@@ -152,6 +154,28 @@ O cliente pode complementar chamados em andamento e avaliar o atendimento conclu
 ## Triagem via Blip e SysAid
 
 O Service Hub inclui o [portal original do Offmoura/Hackathon](https://github.com/Offmoura/Hackathon) como submódulo em `integrations/blip-triagem`. O atalho **Triagem via Blip** abre o serviço Python em uma porta local própria. Nesse fluxo, o portal gera o link assinado de uso único, coleta nome, CNPJ, e-mail e relato, classifica com Ollama, apresenta a revisão e grava o e-mail em `integrations/blip-triagem/outbox/`. Em modo demonstração, a confirmação do SysAid gera um protocolo `SYS-DEMO-…`.
+
+### Fluxo do Blip ao SysAid em imagens
+
+As capturas usam um pedido fictício de segunda via de boleto e uma resposta simulada do Ollama.
+
+**1. Entrada pela conversa do Blip.** A página de demonstração gera um link assinado de uso único para a triagem.
+
+![Entrada da demonstração do Blip com o botão para abrir o portal de triagem](docs/imagens/blip-entrada.jpg)
+
+**2. Formulário de triagem.** O cliente informa nome, CNPJ, e-mail e o motivo do contato.
+
+![Formulário de triagem preenchido com dados fictícios de um pedido de segunda via de boleto](docs/imagens/blip-formulario.jpg)
+
+**3. Revisão antes do envio.** O cliente confere categoria, prioridade e resumo antes de encaminhar para a equipe.
+
+![Tela de revisão com categoria Boleto, prioridade média e resumo da solicitação](docs/imagens/blip-revisao.jpg)
+
+**4. Confirmação simulada.** O portal exibe o código da solicitação e o protocolo de teste do SysAid. O e-mail fica salvo na pasta `outbox/`.
+
+![Confirmação do envio em modo demonstração com o código TRI e o protocolo fictício SYS-DEMO](docs/imagens/blip-protocolo.jpg)
+
+### Executar a triagem localmente
 
 Com Node.js e Python 3.11 ou superior, na raiz do Service Hub:
 
