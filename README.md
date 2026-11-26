@@ -2,6 +2,36 @@
 
 Protótipo de autoatendimento para clientes com base de conhecimento, abertura e acompanhamento de chamados e uma fila interna de analistas.
 
+## Demonstração em imagens
+
+### Portal de Triagem
+
+A entrada permite abrir o assistente ou ir direto ao formulário de chamado.
+
+![Página inicial do Service Hub com os atalhos para a triagem e para o atendimento](docs/imagens/portal-triagem.jpg)
+
+### Do relato ao protocolo
+
+Neste exemplo, o cliente relata uma cobrança em duplicidade. O assistente orienta o encaminhamento para Financeiro, e o cliente revisa os dados antes de registrar.
+
+![Assistente virtual encaminhando uma cobrança em duplicidade para a fila Financeiro](docs/imagens/assistente-triagem.jpg)
+
+Após o registro, o cliente pode acompanhar o andamento pelo protocolo, complementar a solicitação e encerrar ou reabrir o chamado.
+
+![Detalhes do chamado de cobrança em duplicidade, com protocolo, status e linha do tempo](docs/imagens/chamado-cliente.jpg)
+
+### Exemplo de e-mail ao cliente
+
+Prévia da confirmação com o mesmo protocolo e o relato original. A imagem usa a mensagem gerada pelo Service Hub com dados fictícios e envio simulado. A mensagem do suporte inclui também a categoria, a prioridade, a fila e o resumo.
+
+![Prévia do e-mail de confirmação com remetente e destinatário fictícios, protocolo e descrição da solicitação](docs/imagens/email-confirmacao.jpg)
+
+### Fila de suporte
+
+Na demonstração local, a equipe encontra o mesmo protocolo na fila Financeiro e pode assumir o atendimento.
+
+![Fila de suporte mostrando o chamado de cobrança em duplicidade encaminhado para Financeiro](docs/imagens/fila-suporte.jpg)
+
 ## Executar localmente
 
 Requisitos: Node.js 20.19+ ou 22.12+ e npm. Na pasta do projeto:
@@ -24,7 +54,7 @@ A pasta `dist/` contém o resultado estático. A navegação por hash permite ab
 
 A [demonstração pública](https://dutragusta.github.io/Service-Hub/) é publicada a partir da raiz de `main`. Use `npm ci` e `npm run build:pages` para atualizar o `index.html` e os arquivos compilados em `pages/assets/`. Envie essas alterações com as mudanças do código-fonte.
 
-O Pages abre na tela de acesso do **Portal do Cliente**, com as opções **Entrar** e **Cadastrar**. Verificação de e-mail, cadastro, administração e fila autorizada dependem do ambiente com autenticação e worker.
+O Pages abre no **Portal de Triagem**, com atalhos para o assistente, o formulário de chamado, a entrada e o cadastro de demonstração. A fila autorizada e as operações administrativas dependem do ambiente com autenticação e worker.
 
 ## Roteiro para o Hackathon
 
@@ -73,7 +103,7 @@ Chamados, rascunhos, artigos editados e indicadores da demonstração usam a per
 
 ## Entrada e cadastro
 
-A tela inicial apresenta a opção **Sou cliente**, com entrada e cadastro. Na versão hospedada, o cadastro do cliente usa a sessão autenticada para verificar o e-mail. A equipe administradora revisa os pedidos e concede acessos de equipe por convites. Os cadastros não alteram o compartilhamento do site privado.
+A tela inicial oferece os links **Entrar** e **Cadastrar** para clientes. Na versão hospedada, o cadastro do cliente usa a sessão autenticada para verificar o e-mail. A equipe administradora revisa os pedidos e concede acessos de equipe por convites. Os cadastros não alteram o compartilhamento do site privado.
 
 Os portais de demonstração continuam disponíveis pelos links de demonstração e usam dados fictícios neste navegador. Em produção, fluxos corporativos e dados reais precisarão de vinculação às contas autorizadas.
 
