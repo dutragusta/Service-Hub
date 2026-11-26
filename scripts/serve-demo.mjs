@@ -1,6 +1,7 @@
 import { createServer } from 'node:http'
 import { Readable } from 'node:stream'
 import { access } from 'node:fs/promises'
+import { createOllamaSummary } from './ollama-summary.mjs'
 
 const path = new URL('../dist/server/index.js', import.meta.url)
 await access(path).catch(() => {
@@ -17,6 +18,9 @@ if (!Number.isInteger(port) || port < 1024 || port > 65535) {
 const origin = 'http://127.0.0.1:' + port
 const originHost = new URL(origin).host
 const identity = 'analista.demo@example.test'
+const model = process.env.OLLAMA_MODEL?.trim() || 'llama3.1:8b'
+const ollama = createOllamaSummary(model)
+const env = { OLLAMA_SYNOPSIS: ollama.summarize }
 const routes = new Map([
   ['/api/access', { role: 'support', email: identity, demo: true }],
   ['/api/portal/account', { demo: true }],
@@ -52,7 +56,7 @@ const server = createServer(async (incoming, outgoing) => {
     } else {
       if (parsed.pathname === '/api/tickets/summary') headers.set('oai-authenticated-user-id', 'local-demo')
       const request = new Request(parsed, { method, headers, ...(hasBody && { body: Readable.toWeb(incoming), duplex: 'half' }) })
-      response = await worker.fetch(request, {})
+      response = await worker.fetch(request, env)
     }
     outgoing.writeHead(response.status, Object.fromEntries(response.headers))
     if (!response.body || method === 'HEAD') outgoing.end()
@@ -67,4 +71,11 @@ server.on('error', (error) => {
   console.error(error.code === 'EADDRINUSE' ? 'A porta está em uso. Feche a outra execução do Service Hub.' : error.message)
   process.exitCode = 1
 })
-server.listen(port, '127.0.0.1', () => console.log('Service Hub · Demonstração local em ' + origin + '/'))
+server.listen(port, '127.0.0.1', () => {
+  console.log('Service Hub · Demonstração local em ' + origin + '/')
+  ollama.preload().then((ready) => {
+    console.log(ready
+      ? 'Ollama · Modelo pronto: ' + model
+      : 'Ollama · Modelo indisponível. O Service Hub pode resumir por regras.')
+  })
+})

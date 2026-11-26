@@ -102,6 +102,10 @@ Veja [Segurança e roteiro de demonstração](SEGURANCA.md). Execute `node scrip
 
 Para executar a aplicação completa localmente, rode `npm ci`, `npm run build` e `npm run demo`. Abra `http://127.0.0.1:4173/`. O pacote compilado pode ser iniciado diretamente com `node scripts/serve-demo.mjs` ou pelo `iniciar-demo.cmd` no Windows.
 
+Para ativar o resumo com Llama, instale e abra o Ollama no mesmo computador e baixe o modelo com `ollama pull llama3.1:8b`. Inicie o Service Hub e aguarde a mensagem **Ollama · Modelo pronto** no terminal. Depois do download, o modelo roda offline e a aplicação chama o Ollama pelo endereço local. Em computadores mais lentos, baixe `ollama pull llama3.2:3b` e inicie a demo com `OLLAMA_MODEL` configurada para `llama3.2:3b`. No PowerShell, use `$env:OLLAMA_MODEL = 'llama3.2:3b'` antes de `npm run demo`.
+
+O Llama escreve a síntese. Categoria, prioridade e fila seguem as regras do portal. Se o Ollama estiver indisponível, demorar mais de 7,5 segundos ou devolver uma resposta inválida, o atendimento segue com o resumo por regras. O GitHub Pages usa o resumo por regras do navegador.
+
 O ambiente local serve a base fictícia por API, gera o resumo no servidor e permite concluir o atendimento pela fila de analista simulada. O catálogo e as citações exibem referência, revisão e equipe fictícia responsável. Consulte [APRESENTACAO.md](APRESENTACAO.md) para demonstrar a jornada e seus limites.
 
 No pacote offline e no GitHub Pages, **Entrar** e **Cadastrar** demonstram a conta do cliente com dados fictícios e e-mail `@example.test`. O cadastro fica no navegador. O ambiente autenticado usa a verificação de conta do servidor.
