@@ -655,7 +655,7 @@ progress { width: min(100%, 20rem); accent-color: var(--action); height: .75rem;
 .incident-fields[hidden] { display: none; }
 .incident-fields > button { justify-self: start; text-align: left; }
 .ticket-summary { overflow-wrap: anywhere; }
-.ticket-summary dl { display: grid; gap: .75rem; }
+.ticket-summary dl { grid-template-columns: minmax(0, 1fr); gap: .75rem; }
 .ticket-summary dl > div { display: grid; gap: .25rem; }
 .ticket-summary dd { margin-inline-start: 0; }
 .ticket-summary h4 { margin-block: 1rem .35rem; }

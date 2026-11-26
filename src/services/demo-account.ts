@@ -4,7 +4,22 @@ const accountsKey = 'service-hub-demo-customer-accounts-v1'
 const sessionKey = 'service-hub-demo-customer-session-v1'
 
 function readAccounts(): DemoCustomer[] {
-  return JSON.parse(localStorage.getItem(accountsKey) ?? '[]')
+  const stored = localStorage.getItem(accountsKey)
+  if (!stored) return []
+
+  let accounts: unknown
+  try {
+    accounts = JSON.parse(stored)
+  } catch {
+    return []
+  }
+
+  if (!Array.isArray(accounts)) return []
+  return accounts.filter((account): account is DemoCustomer =>
+    typeof account?.name === 'string' &&
+    typeof account.company === 'string' &&
+    typeof account.email === 'string'
+  )
 }
 
 export function enterDemoCustomer(email: string, registration?: { name: string, company: string }) {

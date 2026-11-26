@@ -8,7 +8,7 @@ O projeto foi preparado para demonstrar autoatendimento com chamados, pessoas e 
 | Permissões administrativas | O servidor verifica as permissões nas rotas de gestão e de cadastro. Configurações fica disponível somente para administradores. A navegação de suporte usa o perfil autorizado da equipe. |
 | Convites | O servidor salva o hash do token. O vínculo com o e-mail, a validade de 48 horas e o uso único são verificados ao aceitar. |
 | API de resumo | Exige sessão autenticada, método POST, origem do próprio site e conteúdo JSON. Limita tamanho e campos, rejeita formatos comuns de credenciais e e-mails e pede que o navegador não armazene a resposta em cache. |
-| Integração com modelo | A credencial fica em variável do servidor. Somente os campos validados do chamado são encaminhados quando o provedor está configurado. A requisição usa `store: false`. O modelo redige a síntese e os campos factuais de triagem continuam separados. Em erro, o servidor retorna um resumo por regras. |
+| Integração com modelo | Somente os campos validados do chamado são encaminhados. Na hospedagem com OpenAI, a credencial fica em variável do servidor e a requisição usa `store: false`. Na demonstração, o Ollama é acessado no mesmo computador. O modelo redige a síntese e os campos factuais de triagem continuam separados. Em erro, o servidor retorna um resumo por regras. |
 | Escalonamento | Orientações apresentadas e testes realmente executados ficam separados. Lacunas aparecem para validação do analista, e a síntese não executa alterações de conta, fila ou prioridade. |
 
 ## Roteiro de apresentação

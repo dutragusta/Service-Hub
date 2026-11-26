@@ -136,7 +136,7 @@ export function NewTicket({ profile }: { profile: Profile }) {
   return <><Link className="back" to={base + '/chamados'}>Voltar aos chamados</Link>
     <Heading title="Abrir chamado" description="Informe o que aconteceu para a equipe de suporte entender o caso." />
     <div className="ticket-create-layout">
-      <form className="card ticket-form" noValidate onSubmit={submit}>
+      <form id="new-ticket-form" className="card ticket-form" noValidate onSubmit={submit}>
         <header className="ticket-section-title"><span className="icon-box"><TicketPlus size={21} aria-hidden /></span><div><h2>Detalhes da solicitação</h2><p>Categoria, título e descrição são obrigatórios.</p></div></header>
         {errors.form && <p className="alert error" role="alert">{errors.form}</p>}
         <fieldset disabled={saving} className="incident-fields">
@@ -179,7 +179,7 @@ export function NewTicket({ profile }: { profile: Profile }) {
           <p>Revise o resumo e confirme quais testes foram feitos antes de registrar.</p>
           <ContextDetails context={{ ...context, outcome: undefined }} />
           <label>Resultado dos testes
-            <textarea name="outcome" rows={3} maxLength={600} value={outcome} onChange={(event) => setOutcome(event.target.value)}
+            <textarea form="new-ticket-form" name="outcome" rows={3} maxLength={600} value={outcome} onChange={(event) => setOutcome(event.target.value)}
               disabled={!includeContext || saving} placeholder="Ex.: testei em outro navegador e a falha continuou."
               aria-invalid={Boolean(errors.outcome)} aria-describedby={errors.outcome ? 'outcome-error' : undefined} />
             {errors.outcome && <span id="outcome-error" className="field-error" role="alert">{errors.outcome}</span>}
