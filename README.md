@@ -148,3 +148,28 @@ O ambiente local serve a base fictícia por API, gera o resumo no servidor e per
 No pacote offline e no GitHub Pages, **Entrar** e **Cadastrar** demonstram a conta do cliente com dados fictícios e e-mail `@example.test`. O cadastro fica no navegador. O ambiente autenticado usa a verificação de conta do servidor.
 
 O cliente pode complementar chamados em andamento e avaliar o atendimento concluído. Os indicadores são calculados a partir dos dados de demonstração deste navegador.
+
+## Triagem via Blip e SysAid
+
+O Service Hub inclui o [portal original do Offmoura/Hackathon](https://github.com/Offmoura/Hackathon) como submódulo em `integrations/blip-triagem`. O atalho **Triagem via Blip** abre o serviço Python em uma porta local própria. Nesse fluxo, o portal gera o link assinado de uso único, coleta nome, CNPJ, e-mail e relato, classifica com Ollama, apresenta a revisão e grava o e-mail em `integrations/blip-triagem/outbox/`. Em modo demonstração, a confirmação do SysAid gera um protocolo `SYS-DEMO-…`.
+
+Com Node.js e Python 3.11 ou superior, na raiz do Service Hub:
+
+```bash
+git submodule update --init integrations/blip-triagem
+```
+
+Crie o ambiente virtual e instale as dependências:
+
+- Windows: execute `py -3 -m venv integrations/blip-triagem/.venv` e depois `integrations\blip-triagem\.venv\Scripts\python.exe -m pip install -r integrations/blip-triagem/requirements.txt`
+- macOS/Linux: execute `python3 -m venv integrations/blip-triagem/.venv` e depois `integrations/blip-triagem/.venv/bin/python -m pip install -r integrations/blip-triagem/requirements.txt`
+
+```bash
+npm ci
+npm run build
+npm run demo:blip
+```
+
+Abra `http://127.0.0.1:4173/` e selecione **Triagem via Blip**. O backend usa a porta 8000 por padrão. Se necessário, defina `BLIP_TRIAGE_PORT` ou indique outro executável Python com `BLIP_TRIAGE_PYTHON`. Para classificação real, mantenha o Ollama em execução com o modelo configurado no submódulo. Os fluxos usam dados fictícios e o comando inicia o backend em modo demonstração. O GitHub Pages serve a versão estática do Service Hub.
+
+Em homologação, configure o ambiente pelo `.env.example` do submódulo, com o endereço autorizado para transferência humana e os parâmetros de Blip e SMTP. Os provedores de confirmação real por API e e-mail ainda são stubs no projeto original. O protocolo oficial e a consulta do mesmo chamado após perda da confirmação exigem implementação e validação com o SysAid de homologação.

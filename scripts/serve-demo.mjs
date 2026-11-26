@@ -24,7 +24,21 @@ const env = { OLLAMA_SYNOPSIS: ollama.summarize, TICKET_EMAIL_DEMO: true }
 const routes = new Map([
   ['/api/access', { role: 'support', email: identity, demo: true }],
   ['/api/portal/account', { demo: true }],
+  ['/api/integrations/blip', { url: null }],
 ])
+
+const blip = process.argv.includes('--blip')
+  ? await import('./start-blip-triage.mjs').then(({ startBlipTriage }) => startBlipTriage(port)).catch((error) => {
+    console.error('Triagem via Blip · ' + error.message)
+    process.exit(1)
+  })
+  : undefined
+if (blip) {
+  routes.set('/api/integrations/blip', { url: blip.url })
+  process.once('exit', () => blip.child.kill())
+  for (const signal of ['SIGINT', 'SIGTERM']) process.once(signal, () => process.exit())
+  blip.child.once('exit', () => routes.set('/api/integrations/blip', { url: null }))
+}
 
 const server = createServer(async (incoming, outgoing) => {
   try {
@@ -69,10 +83,12 @@ const server = createServer(async (incoming, outgoing) => {
 
 server.on('error', (error) => {
   console.error(error.code === 'EADDRINUSE' ? 'A porta está em uso. Feche a outra execução do Service Hub.' : error.message)
+  blip?.child.kill()
   process.exitCode = 1
 })
 server.listen(port, '127.0.0.1', () => {
   console.log('Service Hub · Demonstração local em ' + origin + '/')
+  if (blip) console.log('Triagem via Blip · Demonstração local em ' + blip.url)
   ollama.preload().then((ready) => {
     console.log(ready
       ? 'Ollama · Modelo pronto: ' + model

@@ -1,0 +1,3 @@
+[submodule "integrations/blip-triagem"]
+	path = integrations/blip-triagem
+	url = https://github.com/Offmoura/Hackathon.git

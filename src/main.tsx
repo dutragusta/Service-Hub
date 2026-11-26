@@ -31,6 +31,20 @@ const profile = 'cliente' as const
 
 function Entry() {
   const supportPath = '/cliente/chamados/novo'
+  const [blipUrl, setBlipUrl] = useState<string>()
+  useEffect(() => {
+    if (import.meta.env.DEV || import.meta.env.MODE === 'pages') return
+    const controller = new AbortController()
+    void fetch('/api/integrations/blip', { signal: controller.signal, cache: 'no-store' })
+      .then((response) => response.ok ? response.json() : null)
+      .then((integration) => {
+        if (typeof integration?.url === 'string' && /^http:\/\/127\.0\.0\.1:\d+\/$/.test(integration.url)) {
+          setBlipUrl(integration.url)
+        }
+      })
+      .catch(() => {})
+    return () => controller.abort()
+  }, [])
 
   return <div className="entry">
     <header className="entry-header">
@@ -63,6 +77,7 @@ function Entry() {
           <div className="actions entry-actions">
             <Link className="button primary" to="/cliente/assistente"><ExternalLink size={20} aria-hidden /> Abrir Portal de Triagem</Link>
             <Link className="button secondary" to={supportPath}><Headphones size={20} aria-hidden /> Solicitar atendimento</Link>
+            {blipUrl && <a className="button secondary" href={blipUrl}><ExternalLink size={20} aria-hidden /> Triagem via Blip</a>}
           </div>
         </div>
         <div className="entry-card-note">
