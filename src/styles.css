@@ -651,6 +651,66 @@ progress { width: min(100%, 20rem); accent-color: var(--action); height: .75rem;
 .account-workspace .ticket-form { padding: 0; }
 .entry-access-links { margin-top: 1rem; }
 
+.customer-access {
+  width: min(100%, 33rem);
+  margin-inline: auto;
+  padding: clamp(1.25rem, 5vw, 3.5rem) var(--space) 2rem;
+}
+.customer-access-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  margin-bottom: 1.1rem;
+}
+.customer-access-header a, .customer-access-explore {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  min-height: 44px;
+  font-size: .85rem;
+  font-weight: 750;
+}
+.customer-access-header a { color: var(--text); }
+.customer-access-card {
+  display: grid;
+  gap: 1.15rem;
+  padding: clamp(1rem, 5vw, 1.85rem);
+  border-top: 3px solid var(--brand-red);
+  border-radius: 16px;
+  box-shadow: 0 10px 28px rgb(51 44 37 / .06);
+}
+.customer-access-intro { display: grid; gap: .45rem; }
+.customer-access-intro p:first-child { font-size: .8rem; font-weight: 800; color: var(--action); }
+.customer-access-intro h1 { font-size: clamp(1.85rem, 5vw, 2.35rem); }
+.customer-access-intro p:last-child { font-size: .92rem; }
+.customer-access-demo {
+  display: flex;
+  align-items: flex-start;
+  gap: .65rem;
+  padding: .8rem .9rem;
+  border-radius: 8px;
+  background: var(--tint);
+  color: var(--action);
+  font-size: .85rem;
+  overflow-wrap: anywhere;
+}
+.customer-access-demo svg { margin-top: .12rem; }
+.customer-access-demo p { margin-top: .2rem; line-height: 1.5; }
+.customer-access-card > p, .customer-access-card .alert { margin: 0; }
+.customer-access-card .alert { display: block; }
+.customer-access-card input { min-height: 46px; border-color: #8E8272; }
+.customer-access-submit { width: 100%; min-height: 46px; }
+.customer-access-switch {
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+  font-size: .87rem;
+  text-align: center;
+}
+.customer-access-switch a { font-weight: 800; }
+.customer-access-explore { display: flex; justify-content: center; margin: .4rem auto 0; width: fit-content; }
+
+
 .incident-fields { display: grid; min-width: 0; gap: 1rem; border: 0; margin: 0; padding: 0; }
 .incident-fields[hidden] { display: none; }
 .incident-fields > button { justify-self: start; text-align: left; }

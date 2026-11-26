@@ -1,3 +1,4 @@
+import { ArrowLeft, ArrowRight, Info } from 'lucide-react'
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { Brand, Heading } from '../components/ui'
@@ -62,7 +63,7 @@ function PortalAccessForm({ registration }: { registration: boolean }) {
     try {
       if (check === 'demo') {
         enterDemoCustomer(details.email, registration ? organization : undefined)
-        if (registration) setFeedback('Cadastro fictício concluído. Use Entrar com o mesmo e-mail.')
+        if (registration) setFeedback('Cadastro fictício concluído. Entre com o mesmo e-mail.')
         else navigate('/cliente', { replace: true })
         return
       }
@@ -79,35 +80,53 @@ function PortalAccessForm({ registration }: { registration: boolean }) {
   }
 
   const account = access?.account
-  return <main id="main" className="workspace account-workspace">
-    <Link className="back" to="/">Voltar à tela inicial</Link>
-    <div className="account-brand"><Brand /></div>
-    <Heading title={registration ? 'Cadastro · Cliente' : 'Entrar · Cliente'}
-      description={registration ? 'Informe os dados da sua empresa para solicitar acesso.' : 'Informe o e-mail da sua conta para verificar o acesso.'} />
-    <section className="card team-editor" aria-label={registration ? 'Cadastro' : 'Acesso ao portal'}>
+  const demo = check === 'demo'
+  const title = registration ? 'Criar conta' : 'Entrar'
+  const description = registration
+    ? demo ? 'Preencha os dados para criar sua conta de demonstração.' : 'Informe os dados da sua empresa para solicitar acesso.'
+    : demo ? 'Use o e-mail que você cadastrou neste navegador.' : 'Informe o e-mail da sua conta para verificar o acesso.'
+
+  return <main id="main" className="customer-access">
+    <header className="customer-access-header">
+      <Brand />
+      <Link to="/"><ArrowLeft size={16} aria-hidden /> Voltar ao início</Link>
+    </header>
+    <section className="card customer-access-card" aria-labelledby="customer-access-title">
+      <div className="customer-access-intro">
+        <p>Portal do Cliente</p>
+        <h1 id="customer-access-title" tabIndex={-1}>{title}</h1>
+        <p>{description}</p>
+      </div>
       {check === 'loading' && <p role="status">Verificando sua sessão…</p>}
       {check === 'signed-out' && <p className="alert">Entre com sua conta do ChatGPT para confirmar seu e-mail e continuar.</p>}
-      {check === 'demo' && <p className="alert">Modo demonstração. Use nome e empresa fictícios e um e-mail como <strong>cliente@example.test</strong>. A conta fica neste navegador.</p>}
-      {feedback && <p role="status" className="alert success">{feedback} <Link to={accessPath}>Entrar</Link></p>}
+      {demo && <div className="customer-access-demo" id="customer-access-demo">
+        <Info size={18} aria-hidden />
+        <div><strong>Modo demonstração</strong>
+          <p>{registration ? <>Use nome e empresa fictícios e um e-mail como <strong>cliente@example.test</strong>. O cadastro fica neste navegador.</>
+            : <>Entre com um e-mail de demonstração como <strong>cliente@example.test</strong>.</>}</p>
+        </div>
+      </div>}
+      {feedback && <p role="status" className="alert success">{feedback}</p>}
       {check === 'failed' && <p className="alert" role="status">A verificação requer uma sessão na versão hospedada. Na demonstração, use apenas dados fictícios.</p>}
       {account && account.status !== 'approved' && <p className="alert" role="status">Cadastro {statusLabels[account.status].toLowerCase()}{account.status === 'pending' ? '. Aguarde a revisão pela equipe responsável.' : '.'}</p>}
       {verified && !account && <p className="alert" role="status">E-mail confirmado. Solicite seu cadastro para continuar.</p>}
-      {registration && account?.status === 'approved' ? <div><Link className="button primary" to={accessPath}>Ir para entrada</Link></div> :
+      {registration && account?.status === 'approved' ? <Link className="button primary customer-access-submit" to={accessPath}>Ir para entrada</Link> :
         <form className="ticket-form" onSubmit={submit}>
           {registration && <label>Nome completo<input autoComplete="name" name="name" required maxLength={100} /></label>}
-          <label>E-mail profissional<input type="email" autoComplete="email" name="email" required maxLength={254} placeholder={check === 'demo' ? 'cliente@example.test' : undefined} /></label>
+          <label>{demo ? 'E-mail' : 'E-mail profissional'}<input type="email" autoComplete="email" name="email" required maxLength={254} aria-describedby={demo ? 'customer-access-demo' : undefined} /></label>
           {registration && <label>Empresa<input autoComplete="organization" name="company" required maxLength={120} /></label>}
-          {check !== 'demo' && <p className="muted">Use o mesmo e-mail verificado pela sua sessão.</p>}
+          {check === 'ready' && <p className="muted">Use o mesmo e-mail verificado pela sua sessão.</p>}
           {error && <p className="alert error" role="alert">{error}</p>}
-          <div>{check === 'signed-out' ? <a className="button primary" href={signIn} target="_top">Entrar com ChatGPT</a> :
-            <button className="button primary" disabled={(check !== 'ready' && check !== 'demo') || saving || (registration && account?.status === 'pending')} type="submit">{saving ? 'Verificando…' : registration ? 'Enviar cadastro' : check === 'demo' ? 'Entrar' : 'Verificar e-mail'}</button>}</div>
+          {check === 'signed-out' ? <a className="button primary customer-access-submit" href={signIn} target="_top">Entrar com ChatGPT <ArrowRight size={18} aria-hidden /></a> :
+            <button className="button primary customer-access-submit" disabled={(check !== 'ready' && !demo) || saving || (registration && account?.status === 'pending')} type="submit">
+              {saving ? 'Verificando…' : registration ? 'Enviar cadastro' : demo ? 'Entrar' : 'Verificar e-mail'}
+              <ArrowRight size={18} aria-hidden />
+            </button>}
         </form>}
-      <div className="actions">
-        {!registration && !access?.canEnter && <Link to={accessPath + '/cadastro'}>Solicitar cadastro</Link>}
-        {registration && account?.status !== 'approved' && <Link to={accessPath}>Voltar para entrada</Link>}
-        <Link to={'/' + profile}>Explorar demonstração</Link>
-      </div>
+      {registration && account?.status !== 'approved' && <p className="customer-access-switch">Já tem conta? <Link to={accessPath}>Entrar</Link></p>}
+      {!registration && !access?.canEnter && <p className="customer-access-switch">Ainda não tem conta? <Link to={accessPath + '/cadastro'}>{demo ? 'Criar conta' : 'Solicitar cadastro'}</Link></p>}
     </section>
+    <Link className="customer-access-explore" to={'/' + profile}>Explorar demonstração <ArrowRight size={16} aria-hidden /></Link>
   </main>
 }
 
