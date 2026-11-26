@@ -2,7 +2,7 @@ import { demoIncidents } from '../data/demo-incidents'
 import { knowledgeMode } from '../services/knowledge'
 import PromptBar from '../components/PromptBar'
 import { getTopics, knowledgeReference, recordSession } from '../services/operations'
-import { Check, Headphones, RotateCcw, TicketPlus } from 'lucide-react'
+import { BookOpen, Check, ChevronDown, Headphones, ListChecks, RotateCcw, TicketPlus } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Empty, Heading, KnowledgeSource, TopicIcon } from '../components/ui'
@@ -15,6 +15,7 @@ export { initialConversation, type Conversation } from '../services/conversation
 
 export function Assistant({ profile, conversation, update }: { profile: Profile, conversation: Conversation, update: (conversation: Conversation) => void }) {
   const [error, setError] = useState('')
+  const [expanded, setExpanded] = useState<'topics' | 'examples' | null>(null)
   const log = useRef<HTMLDivElement>(null)
   const base = '/' + profile
   const { topic, stage, messages } = conversation
@@ -41,12 +42,19 @@ export function Assistant({ profile, conversation, update }: { profile: Profile,
     return true
   }
 
+  function chooseSuggestion(text: string, topicId?: string, exampleId?: string) {
+    if (send(text, topicId, exampleId)) {
+      setExpanded(null)
+      log.current?.focus()
+    }
+  }
+
   return <><Heading title="Assistente virtual" description="Encontre orientações e encaminhe o atendimento com o contexto da conversa." />
     <div className="chat-layout assistant-layout">
       <section className="chat-card" aria-label="Atendimento virtual">
         <header className="chat-header"><span className="icon-box"><Headphones size={21} aria-hidden /></span>
           <div><strong>{topic?.title ?? 'Atendimento Service Hub'}</strong><small>{profiles[profile].portal} · {knowledgeMode(profile) === 'servidor' ? 'Base consultada via API' : knowledgeMode(profile) === 'contingencia' ? 'Base de contingência' : 'Base fictícia local'}</small></div>
-          <button className="text-button chat-reset" onClick={() => { update(initialConversation()); setError('') }}><RotateCcw size={15} aria-hidden /> Nova conversa</button>
+          <button className="text-button chat-reset" onClick={() => { update(initialConversation()); setError(''); setExpanded(null) }}><RotateCcw size={15} aria-hidden /> Nova conversa</button>
         </header>
         <div className="chat-log" ref={log} role="log" aria-label="Mensagens da conversa" tabIndex={0}>
           {messages.map((message, i) => <div className={'message ' + message.author} key={i}>
@@ -64,14 +72,30 @@ export function Assistant({ profile, conversation, update }: { profile: Profile,
           <small id="chat-hint">Use dados fictícios. Evite senhas, tokens e códigos de autenticação.</small>
         </div>
       </section>
-      <aside className="chat-aside card" aria-label="Opções para a conversa"><h2>Assuntos deste portal</h2>
-        <div className="topic-options">{getTopics(profile).map((item) => <button key={item.id} className="rail-link" aria-pressed={topic?.id === item.id} onClick={() => send(item.title, item.id)}><TopicIcon id={item.id} />{item.title}</button>)}</div>
-        {stage === 'initial' && <><h3>Testar um caso fictício</h3>
-          <div className="topic-options">{demoIncidents[profile].map(({ id, title, opening }) =>
-            <button key={id} className="rail-link" onClick={() => send(opening, undefined, id)}>{title}</button>)}</div>
-        </>}
-        {topic && <Link className="button secondary" to={base + '/diagnostico/' + topic.id} state={{ context }}>Diagnóstico guiado</Link>}
-        <Link className="button secondary" to={ticketUrl} state={{ context }}><TicketPlus size={17} aria-hidden /> Falar com suporte</Link>
+      <aside className="chat-aside" aria-label="Opções para a conversa">
+        <div className="chat-suggestions">
+          <button className="chat-disclosure" type="button" aria-expanded={expanded === 'topics'} aria-controls="chat-topics"
+            onClick={() => setExpanded(expanded === 'topics' ? null : 'topics')}>
+            <BookOpen size={17} aria-hidden /> Assuntos do portal <ChevronDown className="chat-chevron" size={16} aria-hidden />
+          </button>
+          <div id="chat-topics" className="chat-suggestion-list" hidden={expanded !== 'topics'}>
+            {getTopics(profile).map((item) =>
+              <button key={item.id} type="button" aria-pressed={topic?.id === item.id}
+                onClick={() => chooseSuggestion(item.title, item.id)}>{item.title}</button>)}
+          </div>
+          {stage === 'initial' && <>
+            <button className="chat-disclosure" type="button" aria-expanded={expanded === 'examples'} aria-controls="chat-examples"
+              onClick={() => setExpanded(expanded === 'examples' ? null : 'examples')}>
+              <ListChecks size={17} aria-hidden /> Testar um caso fictício <ChevronDown className="chat-chevron" size={16} aria-hidden />
+            </button>
+            <div id="chat-examples" className="chat-suggestion-list" hidden={expanded !== 'examples'}>
+              {demoIncidents[profile].map(({ id, title, opening }) =>
+                <button key={id} type="button" onClick={() => chooseSuggestion(opening, undefined, id)}>{title}</button>)}
+            </div>
+          </>}
+        </div>
+        {topic && <Link className="text-button chat-shortcut" to={base + '/diagnostico/' + topic.id} state={{ context }}>Diagnóstico guiado</Link>}
+        <Link className="text-button chat-shortcut" to={ticketUrl} state={{ context }}><TicketPlus size={17} aria-hidden /> Falar com suporte</Link>
       </aside>
     </div>
   </>
