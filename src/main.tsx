@@ -2,7 +2,7 @@ import { loadKnowledge } from './services/knowledge'
 import { getTopics } from './services/operations'
 import '@fontsource-variable/manrope/wght.css'
 import './styles.css'
-import { BarChart3, Bell, CircleHelp, BookOpen, Building2, Headphones, House, ClipboardList, Settings, Ticket } from 'lucide-react'
+import { BarChart3, Bell, CircleHelp, BookOpen, ExternalLink, Headphones, House, ClipboardList, Info, Settings, Ticket, UserRound } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { HashRouter, Link, Navigate, NavLink, Route, Routes, useLocation, useParams } from 'react-router-dom'
@@ -30,41 +30,52 @@ const navItems = [
 const profile = 'cliente' as const
 
 function Entry() {
+  const supportPath = '/cliente/chamados/novo'
+
   return <div className="entry">
-    <header className="entry-header"><Brand /><span className="demo-label">Demonstração</span></header>
+    <header className="entry-header">
+      <div className="entry-header-content">
+        <div className="entry-identity">
+          <Brand />
+          <span className="entry-name">Portal de Triagem</span>
+          <span className="demo-label">Modo demonstração</span>
+        </div>
+        <Link className="button secondary entry-header-action" to={supportPath}>
+          <Headphones size={16} aria-hidden /> Solicitar atendimento
+        </Link>
+      </div>
+    </header>
     <main className="entry-main page-enter" id="main">
-      <section className="entry-intro">
-        <div className="entry-intro-copy">
-          <span className="intro-label">Central de atendimento</span>
-          <h1 tabIndex={-1}>Portal do Cliente</h1>
-          <p>Consulte orientações, abra chamados e acompanhe suas solicitações.</p>
-        </div>
-        <div className="entry-graphic" aria-hidden>
-          <svg viewBox="0 0 360 320" fill="none">
-            <path d="M0 72h86v54h71m-157 56h63v60h112m-56-242v63h71v68m41-131v85h79v54h50M360 266h-67v-46h-68m-112 100v-48h77v-47m170-38h-65v-24h-60M0 295h56v-41h92" stroke="currentColor"/>
-            <path d="M0 34h145v63h99v44M360 100h-23v-55h-74v63M360 298H242v-48h-23M0 211h96v-54h57" stroke="currentColor" strokeDasharray="3 7"/>
-            <rect x="151" y="128" width="87" height="88" rx="21" fill="#961900" stroke="#E5DECF"/>
-            <path d="M174 169l13 13 26-27" stroke="#FFFFFF" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-            <g fill="#CCC2AD"><circle cx="86" cy="72" r="3"/><circle cx="190" cy="63" r="3"/><circle cx="310" cy="85" r="3"/><circle cx="63" cy="242" r="3"/><circle cx="293" cy="266" r="3"/><circle cx="96" cy="157" r="3"/><circle cx="190" cy="272" r="3"/></g>
-          </svg>
-        </div>
-      </section>
-      <section className="entry-portals" aria-labelledby="profile-heading">
-        <h2 id="profile-heading">Escolha seu acesso</h2>
-        <div className="profile-card entry-client-card">
-          <span className="icon-box"><Building2 size={23} aria-hidden /></span>
-          <div className="entry-client-content">
-            <h3>Sou cliente</h3>
-            <p>Entre com sua conta ou faça um cadastro para acessar o portal.</p>
-            <div className="actions entry-access-links">
-              <Link className="button primary" to="/acesso/cliente">Entrar</Link>
-              <Link className="button secondary" to="/acesso/cliente/cadastro">Cadastrar</Link>
-            </div>
+      <section className="entry-card" aria-labelledby="entry-title">
+        <div className="entry-intro">
+          <span className="entry-avatar"><UserRound size={28} aria-hidden /></span>
+          <div>
+            <h1 id="entry-title" tabIndex={-1}>Ambiente de Demonstração</h1>
+            <p>Simule a triagem de uma solicitação de cliente e acompanhe o encaminhamento para a equipe de suporte.</p>
           </div>
         </div>
+        <div className="entry-notice">
+          <span><Info size={20} aria-hidden /></span>
+          <p>Use dados fictícios. Os chamados ficam neste navegador e o envio de e-mails é simulado.</p>
+        </div>
+        <div className="entry-start">
+          <h2>Como você quer começar?</h2>
+          <div className="actions entry-actions">
+            <Link className="button primary" to="/cliente/assistente"><ExternalLink size={20} aria-hidden /> Abrir Portal de Triagem</Link>
+            <Link className="button secondary" to={supportPath}><Headphones size={20} aria-hidden /> Solicitar atendimento</Link>
+          </div>
+        </div>
+        <div className="entry-card-note">
+          <Info size={18} aria-hidden />
+          <p>Use o protocolo para acompanhar o atendimento em Meus chamados.</p>
+        </div>
       </section>
+      <nav className="entry-footer" aria-label="Acesso à conta">
+        <Link to="/acesso/cliente">Entrar</Link>
+        <Link to="/acesso/cliente/cadastro">Cadastrar</Link>
+        <Link to="/acesso/equipe">Acesso da equipe</Link>
+      </nav>
     </main>
-    <footer className="entry-footer"><span>Service Hub · Dados fictícios</span><Link to="/acesso/equipe">Acesso da equipe</Link></footer>
   </div>
 }
 
