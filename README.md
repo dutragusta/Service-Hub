@@ -1,199 +1,98 @@
 # Service Hub
 
-Protótipo de autoatendimento para clientes com base de conhecimento, abertura e acompanhamento de chamados e uma fila interna de analistas.
+Protótipo de autoatendimento para clientes. O portal orienta a resolução, abre chamados com o contexto da conversa e organiza o atendimento por fila e protocolo.
 
-## Demonstração em imagens
+[Experimentar no GitHub Pages](https://dutragusta.github.io/Service-Hub/) · [Ver todas as capturas](docs/DEMONSTRACAO.md) · [Executar localmente](#executar-localmente)
 
-[Ver também as capturas da triagem via Blip e SysAid](#fluxo-do-blip-ao-sysaid-em-imagens).
+## Demonstração
 
-### Portal de Triagem
+**Cobrança em duplicidade.** O assistente sugere a fila Financeiro. O cliente revisa o relato, registra o pedido e acompanha o andamento pelo protocolo. Na demonstração local, a equipe encontra o mesmo protocolo na fila e pode assumir o atendimento.
 
-A entrada permite abrir o assistente ou ir direto ao formulário de chamado.
+[![Portal de Triagem do Service Hub com atalhos para o assistente e o formulário](docs/imagens/portal-triagem.jpg)](docs/DEMONSTRACAO.md#cobrança-em-duplicidade)
 
-![Página inicial do Service Hub com os atalhos para a triagem e para o atendimento](docs/imagens/portal-triagem.jpg)
+### E-mail de confirmação
 
-### Do relato ao protocolo
+Prévia gerada com dados fictícios. A mensagem do cliente inclui o protocolo e a solicitação original. O encaminhamento ao suporte inclui também categoria, prioridade, fila e resumo.
 
-Neste exemplo, o cliente relata uma cobrança em duplicidade. O assistente orienta o encaminhamento para Financeiro, e o cliente revisa os dados antes de registrar.
+![Prévia do e-mail de confirmação de cobrança em duplicidade, com o protocolo SH-450B4B1A](docs/imagens/email-confirmacao.jpg)
 
-![Assistente virtual encaminhando uma cobrança em duplicidade para a fila Financeiro](docs/imagens/assistente-triagem.jpg)
+O [exemplo de segunda via de boleto](docs/DEMONSTRACAO.md#segunda-via-de-boleto-via-blip) mostra, em uma execução separada, a entrada pelo Blip, o formulário, a revisão e a confirmação simulada com um protocolo `SYS-DEMO-…`.
 
-Após o registro, o cliente pode acompanhar o andamento pelo protocolo, complementar a solicitação e encerrar ou reabrir o chamado.
+## O que está disponível
 
-![Detalhes do chamado de cobrança em duplicidade, com protocolo, status e linha do tempo](docs/imagens/chamado-cliente.jpg)
+| Ambiente | Comportamento |
+| --- | --- |
+| GitHub Pages | Portal, assistente por regras, base fictícia e chamados armazenados no navegador. E-mails simulados. |
+| Demonstração local | Fila de analistas, registro e acompanhamento no navegador. Ollama opcional para escrever o resumo, com regras de contingência. |
+| Triagem via Blip | Portal Python que demonstra o link assinado, a coleta de dados, a classificação, a revisão e a confirmação simulada do SysAid. Em modo demonstração, a mensagem é gravada em `outbox/`. |
+| Worker autenticado | Cadastro, permissões e envio configurável por e-mail. A instalação depende da infraestrutura de identidade, do binding D1 e da configuração do provedor. |
 
-### Exemplo de e-mail ao cliente
-
-Prévia da confirmação com o mesmo protocolo e o relato original. A imagem usa a mensagem gerada pelo Service Hub com dados fictícios e envio simulado. A mensagem do suporte inclui também a categoria, a prioridade, a fila e o resumo.
-
-![Prévia do e-mail de confirmação com remetente e destinatário fictícios, protocolo e descrição da solicitação](docs/imagens/email-confirmacao.jpg)
-
-### Fila de suporte
-
-Na demonstração local, a equipe encontra o mesmo protocolo na fila Financeiro e pode assumir o atendimento.
-
-![Fila de suporte mostrando o chamado de cobrança em duplicidade encaminhado para Financeiro](docs/imagens/fila-suporte.jpg)
+O cliente pode anexar até três imagens JPG, PNG ou WebP ao abrir ou complementar um chamado, encerrar e reabrir o mesmo protocolo e avaliar o atendimento concluído. O cadastro solicita CNPJ. Use dados fictícios nas demonstrações.
 
 ## Executar localmente
 
-Requisitos: Node.js 20.19+ ou 22.12+ e npm. Na pasta do projeto:
+Requisitos: Node.js 20.19+ ou 22.12+ e npm.
 
 ```bash
 npm ci
-npm run dev
+npm run build
+npm run demo
 ```
 
-Abra o endereço que o Vite imprimir. Para compilar e revisar a versão de produção:
+Abra `http://127.0.0.1:4173/`. Para desenvolver a interface, use `npm run dev`.
+
+### Resumo com Ollama
+
+Com o Ollama instalado, em execução no mesmo computador, baixe o modelo:
 
 ```bash
-npm run build
-npm run preview
+ollama pull llama3.1:8b
 ```
 
-A pasta `dist/` contém o resultado estático. A navegação por hash permite abrir links diretos sem configuração de redirecionamento no servidor.
+Reinicie a demonstração. Para uma opção mais leve, baixe `llama3.2:3b` e defina a variável de ambiente `OLLAMA_MODEL` com esse valor. O Ollama escreve o resumo. Categoria, prioridade e fila do Service Hub seguem as regras do portal. Se o modelo estiver indisponível, a demonstração usa um resumo por regras.
 
-## GitHub Pages
+### Triagem via Blip
 
-A [demonstração pública](https://dutragusta.github.io/Service-Hub/) é publicada a partir da raiz de `main`. Use `npm ci` e `npm run build:pages` para atualizar o `index.html` e os arquivos compilados em `pages/assets/`. Envie essas alterações com as mudanças do código-fonte.
-
-O Pages abre no **Portal de Triagem**, com atalhos para o assistente, o formulário de chamado, a entrada e o cadastro de demonstração. A fila autorizada e as operações administrativas dependem do ambiente com autenticação e worker.
-
-## Roteiro para o Hackathon
-
-O [roteiro de apresentação](APRESENTACAO.md) acompanha um cliente que continua sem acesso ao portal após recuperar a conta e mostra o atendimento do mesmo chamado na fila interna.
-
-## Funcionalidades
-
-- Seleção de perfil, páginas iniciais, busca por assunto e acesso aos chamados recentes.
-- Assistente determinístico com detecção de assuntos, perguntas, sugestões, histórico na sessão e encaminhamento.
-- Diagnóstico em três etapas com orientações ajustadas à resposta e desfecho de resolução ou abertura de chamado.
-- Formulário com validação acessível, categoria pré-selecionada no encaminhamento e armazenamento local.
-- Lista com filtro por status, detalhes e histórico com dados fictícios.
-- Base de conhecimento com busca sem distinção de acentos, filtro por categoria e artigos próprios de cada portal.
-- Estados de ausência de resultados, lista vazia, carregamento do assistente, falha de formulário e confirmação.
-
-## Arquitetura e design
-
-`src/main.tsx` organiza a navegação e a sessão. `src/pages/` contém as telas, `src/components/` reúne componentes compartilhados e `src/services/` contém busca, detecção de assunto e persistência. `src/demo.ts` centraliza o catálogo e os chamados iniciais. `src/types.ts` define os contratos.
-
-A interface usa tons de vermelho e neutros quentes, ícones Lucide e a fonte Manrope Variable. Os tokens de cor, espaçamento, foco e bordas ficam em `src/styles.css`. A solução usa React, TypeScript, Vite, React Router e CSS próprio.
-
-## Limitações e integrações pendentes
-
-O assistente é baseado em regras e possui um catálogo limitado. O contexto da conversa vive na memória da sessão e é reiniciado ao recarregar. Os chamados são mantidos no navegador e usam registros de demonstração. O encaminhamento prepara o registro local com uma categoria sugerida. Atendimento humano, Service Desk, autenticação corporativa, autorização no servidor, base oficial de conhecimento e um modelo de IA conectado são integrações futuras. O portal de demonstração e a área da equipe têm rotas próprias. Chamados ficam no navegador e exigem autorização no servidor antes de qualquer uso em produção. Use apenas dados fictícios.
-
-## Referências
-
-- [Frontend Design, Anthropic](https://github.com/anthropics/skills/tree/main/skills/frontend-design)
-- [Web Design Guidelines e React Best Practices, Vercel](https://github.com/vercel-labs/agent-skills)
-- [Web Interface Guidelines, Vercel](https://vercel.com/design/guidelines)
-- [WCAG 2.2, W3C](https://www.w3.org/TR/WCAG22/)
-
-## Alimentar o assistente do protótipo
-
-Edite `src/data/base-atendimento.json` e gere novamente a aplicação com `npm run build`. Cada assunto tem um identificador único no perfil, título, descrição, palavras-chave, pergunta de triagem e listas de orientações (`steps` e `alternate`). Em `cliente`, use termos que as pessoas digitariam e cadastre orientações liberadas para clientes.
-
-A mesma base alimenta a busca, os artigos e o diagnóstico. As orientações vinculam o artigo da base de demonstração. Ao abrir um chamado com contexto, a referência, o relato e as orientações apresentadas seguem com o resultado dos testes informado pelo usuário. O título do artigo é preservado com o chamado. O assistente identifica assuntos por termos, interpreta respostas comuns e encaminha casos fora da base. Ele funciona localmente, sem modelo generativo ou serviço externo. O catálogo é fictício. O pacote offline inclui os artigos e usa dados salvos no navegador.
-
-## Área da equipe
-
-Use **Acesso da equipe**, no rodapé, para chegar à área interna. O **Painel de atendimento** mostra chamados ativos, prazos de primeira resposta, resoluções e avaliações. Na **Fila de suporte**, a equipe pode buscar pelo protocolo, filtrar, assumir chamados e usar respostas rápidas editáveis ou notas internas da demonstração. Use **Ver como solicitante** para conferir a atualização e a solução na linha do tempo.
-
-**Configurações**, na área interna, reúne Usuários, Clientes e Visão geral para administradores autenticados.
-
-Chamados, rascunhos, artigos editados e indicadores da demonstração usam a persistência local no navegador. A consulta e a gestão de permissões dependem do worker autenticado. A versão estática, por si só, não fornece essa API.
-
-## Entrada e cadastro
-
-A tela inicial oferece os links **Entrar** e **Cadastrar** para clientes. Na versão hospedada, o cadastro do cliente usa a sessão autenticada para verificar o e-mail. A equipe administradora revisa os pedidos e concede acessos de equipe por convites. Os cadastros não alteram o compartilhamento do site privado.
-
-Os portais de demonstração continuam disponíveis pelos links de demonstração e usam dados fictícios neste navegador. Em produção, fluxos corporativos e dados reais precisarão de vinculação às contas autorizadas.
-
-A revisão de prontidão e as limitações para submissão constam em [VERIFICACOES.md](VERIFICACOES.md).
-
-
-## Encaminhamento ao suporte
-
-O chamado de cliente segue para a fila correspondente à categoria. Assuntos que exigem análise fora do catálogo seguem para triagem geral.
-
-## Hospedar o worker
-
-Para uma instalação com autenticação, use um ambiente que forneça o binding D1 `DB`, aplique as migrações em `drizzle/` e configure uma camada de autenticação confiável. O proxy de autenticação deve remover cabeçalhos de identidade enviados pelo cliente e injetar os cabeçalhos esperados pelo worker após validar a sessão. Mantenha o worker acessível somente por essa camada.
-
-O identificador da hospedagem e o hash do e-mail do administrador inicial são configurações locais. Se necessário, configure o hash em `worker/owner.sha256`. O build funciona sem esse arquivo e o ambiente fica sem administrador inicial. Os fluxos de autenticação precisam da infraestrutura que fornece a identidade. A prévia estática serve para navegar pela demonstração com dados fictícios.
-
-## Casos fictícios e resumo para o suporte
-
-Em **Abrir chamado → Preencher com caso fictício**, escolha um incidente do perfil e revise as condições antes do registro. O portal do cliente inclui exemplos de boleto, nota fiscal, contrato, cobrança duplicada, erro de exportação e falha de acesso. Os cinco primeiros foram adaptados dos [cenários sintéticos do Offmoura/Hackathon](https://github.com/Offmoura/Hackathon/blob/main/data/chamados_sinteticos.json). A demonstração por e-mail também mostra o resumo no encaminhamento ao analista.
-
-O worker gera o resumo em `POST /api/tickets/summary`. Sem configuração de IA, a síntese usa regras no servidor. Para habilitar a redação por modelo, configure `OPENAI_API_KEY` como segredo e `OPENAI_SUMMARY_MODEL` com um modelo da API Responses que suporte respostas estruturadas. Use apenas dados fictícios. A versão estática preserva o fluxo com regras locais.
-
-Veja [Segurança e roteiro de demonstração](SEGURANCA.md). Execute `node scripts/check-ticket-summary.mjs` para validar a API, a estrutura do resumo e o tratamento de falha do provedor simulado.
-
-## Cadastro, anexos e confirmação por e-mail
-
-- Novos cadastros solicitam o CNPJ. O formulário e a API validam os dígitos verificadores dos formatos numérico e alfanumérico. A migração `0003_portal_account_cnpj.sql` adiciona a coluna e preserva os cadastros anteriores.
-- O cliente pode encerrar e reabrir o mesmo protocolo. O histórico e os anexos continuam no chamado. Antes do registro ou durante o atendimento, pode adicionar até três imagens JPG, PNG ou WebP. O navegador converte as imagens para WebP e as mantém junto com o chamado no armazenamento local.
-- Na execução local e no GitHub Pages, o envio por e-mail é simulado. A fila local usa os chamados gravados no mesmo navegador. As imagens aparecem na linha do tempo e ficam fora do e-mail.
-- Para ativar o envio real no worker autenticado, configure o segredo `RESEND_API_KEY` e as variáveis `TICKET_EMAIL_FROM` (remetente de um domínio verificado no Resend) e `TICKET_SUPPORT_EMAIL` (caixa da equipe). Use o e-mail verificado de uma conta de cliente aprovada. Ao registrar, o cliente recebe o protocolo e o relato e o suporte recebe também o resumo e a fila. O chamado fica salvo no navegador se o envio falhar. A confirmação na tela indica que o provedor aceitou os dois e-mails.
-
-## Apresentação offline
-
-Para executar a aplicação completa localmente, rode `npm ci`, `npm run build` e `npm run demo`. Abra `http://127.0.0.1:4173/`. O pacote compilado pode ser iniciado diretamente com `node scripts/serve-demo.mjs` ou pelo `iniciar-demo.cmd` no Windows.
-
-Para ativar o resumo com Llama, instale e abra o Ollama no mesmo computador e baixe o modelo com `ollama pull llama3.1:8b`. Inicie o Service Hub e aguarde a mensagem **Ollama · Modelo pronto** no terminal. Depois do download, o modelo roda offline e a aplicação chama o Ollama pelo endereço local. Em computadores mais lentos, baixe `ollama pull llama3.2:3b` e inicie a demo com `OLLAMA_MODEL` configurada para `llama3.2:3b`. No PowerShell, use `$env:OLLAMA_MODEL = 'llama3.2:3b'` antes de `npm run demo`.
-
-O Llama escreve a síntese. Categoria, prioridade e fila seguem as regras do portal. Se o Ollama estiver indisponível, demorar mais de 7,5 segundos ou devolver uma resposta inválida, o atendimento segue com o resumo por regras. O GitHub Pages usa o resumo por regras do navegador.
-
-O ambiente local serve a base fictícia por API, gera o resumo no servidor e permite concluir o atendimento pela fila de analista simulada. O catálogo e as citações exibem referência, revisão e equipe fictícia responsável. Consulte [APRESENTACAO.md](APRESENTACAO.md) para demonstrar a jornada e seus limites.
-
-No pacote offline e no GitHub Pages, **Entrar** e **Cadastrar** demonstram a conta do cliente com dados fictícios e e-mail `@example.test`. O cadastro fica no navegador. O ambiente autenticado usa a verificação de conta do servidor.
-
-O cliente pode complementar chamados em andamento e avaliar o atendimento concluído. Os indicadores são calculados a partir dos dados de demonstração deste navegador.
-
-## Triagem via Blip e SysAid
-
-O Service Hub inclui o [portal original do Offmoura/Hackathon](https://github.com/Offmoura/Hackathon) como submódulo em `integrations/blip-triagem`. O atalho **Triagem via Blip** abre o serviço Python em uma porta local própria. Nesse fluxo, o portal gera o link assinado de uso único, coleta nome, CNPJ, e-mail e relato, classifica com Ollama, apresenta a revisão e grava o e-mail em `integrations/blip-triagem/outbox/`. Em modo demonstração, a confirmação do SysAid gera um protocolo `SYS-DEMO-…`.
-
-### Fluxo do Blip ao SysAid em imagens
-
-As capturas usam um pedido fictício de segunda via de boleto e uma resposta simulada do Ollama.
-
-**1. Entrada pela conversa do Blip.** A página de demonstração gera um link assinado de uso único para a triagem.
-
-![Entrada da demonstração do Blip com o botão para abrir o portal de triagem](docs/imagens/blip-entrada.jpg)
-
-**2. Formulário de triagem.** O cliente informa nome, CNPJ, e-mail e o motivo do contato.
-
-![Formulário de triagem preenchido com dados fictícios de um pedido de segunda via de boleto](docs/imagens/blip-formulario.jpg)
-
-**3. Revisão antes do envio.** O cliente confere categoria, prioridade e resumo antes de encaminhar para a equipe.
-
-![Tela de revisão com categoria Boleto, prioridade média e resumo da solicitação](docs/imagens/blip-revisao.jpg)
-
-**4. Confirmação simulada.** O portal exibe o código da solicitação e o protocolo de teste do SysAid. O e-mail fica salvo na pasta `outbox/`.
-
-![Confirmação do envio em modo demonstração com o código TRI e o protocolo fictício SYS-DEMO](docs/imagens/blip-protocolo.jpg)
-
-### Executar a triagem localmente
-
-Com Node.js e Python 3.11 ou superior, na raiz do Service Hub:
+Requisito adicional: Python 3.11+. O portal Python original está no submódulo [Offmoura/Hackathon](https://github.com/Offmoura/Hackathon).
 
 ```bash
 git submodule update --init integrations/blip-triagem
 ```
 
-Crie o ambiente virtual e instale as dependências:
+Crie um ambiente virtual e instale as dependências a partir da raiz do Service Hub.
 
-- Windows: execute `py -3 -m venv integrations/blip-triagem/.venv` e depois `integrations\blip-triagem\.venv\Scripts\python.exe -m pip install -r integrations/blip-triagem/requirements.txt`
-- macOS/Linux: execute `python3 -m venv integrations/blip-triagem/.venv` e depois `integrations/blip-triagem/.venv/bin/python -m pip install -r integrations/blip-triagem/requirements.txt`
+**macOS e Linux**
 
 ```bash
-npm ci
-npm run build
-npm run demo:blip
+python3 -m venv integrations/blip-triagem/.venv
+integrations/blip-triagem/.venv/bin/python -m pip install -r integrations/blip-triagem/requirements.txt
 ```
 
-Abra `http://127.0.0.1:4173/` e selecione **Triagem via Blip**. O backend usa a porta 8000 por padrão. Se necessário, defina `BLIP_TRIAGE_PORT` ou indique outro executável Python com `BLIP_TRIAGE_PYTHON`. Para classificação real, mantenha o Ollama em execução com o modelo configurado no submódulo. Os fluxos usam dados fictícios e o comando inicia o backend em modo demonstração. O GitHub Pages serve a versão estática do Service Hub.
+**Windows (PowerShell)**
 
-Em homologação, configure o ambiente pelo `.env.example` do submódulo, com o endereço autorizado para transferência humana e os parâmetros de Blip e SMTP. Os provedores de confirmação real por API e e-mail ainda são stubs no projeto original. O protocolo oficial e a consulta do mesmo chamado após perda da confirmação exigem implementação e validação com o SysAid de homologação.
+```powershell
+py -3 -m venv integrations/blip-triagem/.venv
+.\integrations\blip-triagem\.venv\Scripts\python.exe -m pip install -r integrations/blip-triagem/requirements.txt
+```
+
+Após executar `npm ci` e `npm run build`, inicie com `npm run demo:blip`. Em `http://127.0.0.1:4173/`, selecione **Triagem via Blip**. O portal Python usa a porta 8000 por padrão. As variáveis `BLIP_TRIAGE_PORT` e `BLIP_TRIAGE_PYTHON` permitem ajustar a porta e o executável. Para classificação por modelo, execute o Ollama com o modelo indicado na configuração do submódulo.
+
+## Homologação
+
+Os provedores de confirmação real do SysAid ainda são pontos de integração. O protocolo oficial, a fila efetiva e a recuperação após perda da confirmação precisam ser validados no ambiente autorizado.
+
+| Cenário | Resultado esperado |
+| --- | --- |
+| Demanda financeira completa | O mesmo identificador acompanha o pedido até a fila e o protocolo confirmados no SysAid. |
+| Informação insuficiente | A conversa solicita apenas os campos faltantes. |
+| Mesmo pedido reenviado | O reenvio recupera o registro existente. A equipe confere no SysAid que há apenas um chamado. |
+| Criação falha ou confirmação se perde | O fluxo informa que aguarda confirmação enquanto não há protocolo verificado. Se o registro existir, a nova tentativa recupera o mesmo número. |
+
+Compare a fila sugerida pelo assistente, a primeira fila registrada no SysAid e a fila que o Atendimento considera correta.
+
+## Manutenção
+
+- **Publicação estática.** Execute `npm ci` e `npm run build:pages` quando houver mudanças no código publicado. Faça commit do `index.html` e dos arquivos compilados em `pages/assets/`. Alterações de documentação dispensam essa compilação.
+- **Base de conhecimento.** Edite `src/data/base-atendimento.json` e recompile. O catálogo alimenta a busca, o diagnóstico e as orientações do assistente. Parte dos casos fictícios foi adaptada dos [cenários sintéticos do Offmoura/Hackathon](https://github.com/Offmoura/Hackathon/blob/main/data/chamados_sinteticos.json).
+- **Worker e e-mail.** Aplique as migrações em `drizzle/` com o binding D1 `DB` e configure a camada de identidade. O proxy deve retirar os cabeçalhos de identidade enviados pelo cliente e inserir os dados da sessão validada. O envio usa `RESEND_API_KEY`, `TICKET_EMAIL_FROM` e `TICKET_SUPPORT_EMAIL`. O resumo por modelo no worker pode usar `OPENAI_API_KEY` e `OPENAI_SUMMARY_MODEL`.
+- **Referências do projeto.** [Roteiro de demonstração](APRESENTACAO.md) · [Verificações](VERIFICACOES.md) · [Segurança](SEGURANCA.md).
