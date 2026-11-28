@@ -4,6 +4,14 @@ Protótipo de autoatendimento para clientes. O portal orienta a resolução, abr
 
 [Experimentar no GitHub Pages](https://dutragusta.github.io/Service-Hub/) · [Ver todas as capturas](docs/DEMONSTRACAO.md) · [Executar localmente](#executar-localmente)
 
+## Como um chamado vira protocolo
+
+Explore o pedido fictício de segunda via de boleto em quatro etapas. Na última, compare o protocolo de demonstração com o status de confirmação pendente.
+
+[![Prévia do desenho técnico interativo com as etapas Blip, Triagem, Financeiro e Protocolo](docs/imagens/jornada-interativa.jpg)](https://dutragusta.github.io/Service-Hub/como-funciona/)
+
+[Abrir a jornada interativa](https://dutragusta.github.io/Service-Hub/como-funciona/)
+
 ## Demonstração
 
 **Cobrança em duplicidade.** O assistente sugere a fila Financeiro. O cliente revisa o relato, registra o pedido e acompanha o andamento pelo protocolo. Na demonstração local, a equipe encontra o mesmo protocolo na fila e pode assumir o atendimento.

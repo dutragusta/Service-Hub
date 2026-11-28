@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Acompanhe o fluxo demonstrativo de um chamado no Service Hub, da entrada no Blip à confirmação do protocolo.">
+  <title>Como um chamado vira protocolo | Service Hub</title>
+  <link rel="stylesheet" href="./estilo.css">
+  <script type="module" src="./jornada.js"></script>
+</head>
+<body>
+  <header class="topo">
+    <a href="../">Service Hub</a>
+    <span>DEMONSTRAÇÃO INTERATIVA</span>
+    <a class="repositorio" href="https://github.com/dutragusta/Service-Hub#readme">Repositório</a>
+  </header>
+  <main>
+    <section class="intro" aria-labelledby="titulo">
+      <p class="rotulo">CASO FICTÍCIO / SEGUNDA VIA DE BOLETO</p>
+      <h1 id="titulo">Como um chamado<br>vira <em>protocolo</em></h1>
+      <p>Explore o que o cliente envia, o que chega à equipe de Financeiro e quando o protocolo fica disponível.</p>
+    </section>
+    <section class="folha" aria-label="Jornada da solicitação">
+      <div class="desenho">
+        <div class="legenda"><span>FLUXO DO CHAMADO</span><span id="contador">01 / 04</span></div>
+        <div class="visualizacao">
+          <canvas id="modelo" aria-hidden="true" hidden></canvas>
+          <div id="esquema" class="esquema" aria-hidden="true">
+            <span>01</span><b>→</b><span>02</span><b>→</b><span>03</span><b>→</b><span>04</span>
+          </div>
+        </div>
+        <ol class="etapas" aria-label="Etapas da demonstração">
+          <li><button type="button" aria-current="step"><span>01</span>Blip</button></li>
+          <li><button type="button"><span>02</span>Triagem</button></li>
+          <li><button type="button"><span>03</span>Financeiro</button></li>
+          <li><button type="button"><span>04</span>Protocolo</button></li>
+        </ol>
+      </div>
+      <div class="painel">
+        <div id="detalhes" aria-live="polite" aria-atomic="true">
+          <p class="rotulo" id="fase">01 / ENTRADA</p>
+          <h2 id="etapa">Da conversa ao portal</h2>
+          <p id="descricao">Na opção “Outros” do Blip, o cliente recebe um link assinado de uso único que abre o formulário.</p>
+          <dl>
+            <dt>ENTRADA</dt><dd id="entrada">Conversa no Blip</dd>
+            <dt>SAÍDA</dt><dd id="saida">Link de triagem individual</dd>
+          </dl>
+        </div>
+        <fieldset id="confirmacao" hidden>
+          <legend>Resposta do SysAid</legend>
+          <label><input type="radio" name="status" value="simulada" checked> Confirmação simulada</label>
+          <label><input type="radio" name="status" value="pendente"> Aguardando confirmação</label>
+        </fieldset>
+        <div class="navegacao">
+          <button type="button" id="anterior" disabled>← Anterior</button>
+          <button type="button" id="proxima">Próxima →</button>
+        </div>
+      </div>
+    </section>
+    <noscript><p>A jornada segue do Blip à triagem, ao Financeiro e à confirmação do protocolo. Ative o JavaScript para explorar as etapas.</p></noscript>
+    <footer>
+      <p>Simulação com dados fictícios. A confirmação real do SysAid depende de homologação.</p>
+      <a href="../">Abrir o portal</a>
+    </footer>
+  </main>
+</body>
+</html>
